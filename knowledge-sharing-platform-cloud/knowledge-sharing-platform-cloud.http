@@ -1,0 +1,6 @@
+@knowledge_sharing_platform_cloud_HostAddress = http://localhost:5095
+
+GET {{knowledge_sharing_platform_cloud_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
