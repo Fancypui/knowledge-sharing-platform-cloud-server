@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace knowledge_sharing_platform_cloud.Entity
+﻿namespace knowledge_sharing_platform_cloud.Data.Models
 {
     public class User
     {
