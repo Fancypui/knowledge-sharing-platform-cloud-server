@@ -3,7 +3,7 @@ using Stripe;
 
 namespace knowledge_sharing_platform_cloud.Controllers
 {
-    [Route("/webhook")]
+    [Route("webhook")]
     [ApiController]
     public class WebhookController : Controller
     {

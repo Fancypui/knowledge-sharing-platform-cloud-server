@@ -7,5 +7,7 @@ namespace knowledge_sharing_platform_cloud.Services
     public interface IChannelService
     {
         Task<CreateChannelResp> CreateChannel(CreateChannelReq channel);
+
+        Task<ApiResult<JoinChannelResp>> JoinChannel(JoinChannelReq channel);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Repositories;
+using knowledge_sharing_platform_cloud.ExceptionHandler;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using Stripe;
@@ -32,6 +33,12 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 {
                     Country = "MY",
                     Email = user.Email,
+                    Capabilities = new AccountCapabilitiesOptions
+                    {
+                        CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },
+                        Transfers = new AccountCapabilitiesTransfersOptions { Requested = true },
+                        LinkPayments = new AccountCapabilitiesLinkPaymentsOptions { Requested = true },
+                    }
                 };
                 var accountService = new AccountService();
                 var newAccount = accountService.Create(accountOptions);
@@ -80,15 +87,26 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response; 
         }
 
-        public async Task<JoinChannelResp> JoinChannel(JoinChannelReq joinChannelReq)
+        public async Task<ApiResult<JoinChannelResp>> JoinChannel(JoinChannelReq joinChannelReq)
         {
             Channel channelToBeJoined = await _channelRepo.GetChannelbyIdAsync(joinChannelReq.channelId);
 
             if (channelToBeJoined == null)
             {
-                // return Api Error;
-                return "Not Ok";
+                return ApiResult<JoinChannelResp>.ServiceFail(1, "Channel does not exist");
             }
+
+            User channelCreator = await _userRepo.GetUserByIdAsync(channelToBeJoined.UserId);
+
+            if (channelCreator == null)
+            {
+                return ApiResult<JoinChannelResp>.ServiceFail(1, "Channel creator does not exist");
+            }
+
+            var accountOptions = new RequestOptions
+            {
+                StripeAccount = channelCreator.StripeAccountId,
+            };
 
             var paymentLinkOptions = new PaymentLinkCreateOptions
             {
@@ -106,14 +124,14 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             };
 
             var paymentLinkService = new PaymentLinkService();
-            var paymentLink = paymentLinkService.Create(paymentLinkOptions);
+            var paymentLink = paymentLinkService.Create(paymentLinkOptions, accountOptions);
 
             JoinChannelResp response = new()
             {
                 paymentLinkUrl = paymentLink.Url
             };
 
-            return response;
+            return ApiResult<JoinChannelResp>.ServiceSucess(response);
         }
     }
 }
