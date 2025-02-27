@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178
+VisualStudioVersion = 17.12.35707.178 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "knowledge-sharing-platform-cloud.Api", "knowledge-sharing-platform-cloud\knowledge-sharing-platform-cloud.Api.csproj", "{CE016B4C-463E-4C24-94DE-D03339762F5F}"
 EndProject

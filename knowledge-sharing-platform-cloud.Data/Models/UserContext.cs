@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using knowledge_sharing_platform_cloud.Data.Constant;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace knowledge_sharing_platform_cloud.Data.Models;
@@ -12,7 +13,7 @@ public class UserContext : DbContext
     public UserContext(IConfiguration config)
     {
         _config = config;
-        connectionString = config.GetConnectionString("sqlServer");
+        connectionString = config.GetConnectionString(ConfigurationConstant.DB_CONNECTION_STRING);
     }
 
     public DbSet<User> User { get; set; }
