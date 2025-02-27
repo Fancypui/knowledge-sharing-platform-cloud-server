@@ -25,7 +25,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
                 var newUser = await _userRepo.CreateUserAsync(user);
                 return CreatedAtAction(nameof(CreateUser), newUser);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
