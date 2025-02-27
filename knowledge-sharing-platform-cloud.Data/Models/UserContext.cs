@@ -12,7 +12,7 @@ public class UserContext : DbContext
     public UserContext(IConfiguration config)
     {
         _config = config;
-        connectionString = config.GetConnectionString("default");
+        connectionString = config.GetConnectionString("sqlServer");
     }
 
     public DbSet<User> User { get; set; }

@@ -4,14 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace knowledge_sharing_platform_cloud.Controllers
 {
-    [Route("[controller]")]
+    [Route("/user")]
     [ApiController]
     public class UserController : Controller
     {
-        private readonly IUserRepo _userRepo;
+        private readonly UserRepo _userRepo;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserRepo userRepo, ILogger<UserController> logger)
+        public UserController(UserRepo userRepo, ILogger<UserController> logger)
         {
             _userRepo = userRepo;
             _logger = logger;
@@ -27,8 +27,8 @@ namespace knowledge_sharing_platform_cloud.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                _logger.LogError(ex.InnerException?.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.InnerException?.Message);
             }
         }
     }

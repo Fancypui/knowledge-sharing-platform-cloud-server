@@ -1,6 +1,9 @@
 using knowledge_sharing_platform_cloud.config;
 using knowledge_sharing_platform_cloud.Data.Models;
+using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Repositories;
+using knowledge_sharing_platform_cloud.Services;
+using knowledge_sharing_platform_cloud.Services.impl;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,8 +20,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<UserContext>();
-builder.Services.AddTransient<IUserRepo, UserRepo>();
+builder.Services.AddTransient<UserContext>();
+builder.Services.AddTransient<UserRepo>();
+
+builder.Services.AddTransient<ChannelRepo>();
+builder.Services.AddTransient<ChannelContext>();
+builder.Services.AddTransient<IChannelService, ChannelServiceImpl>();
 
 var app = builder.Build();
 
