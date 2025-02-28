@@ -1,18 +1,17 @@
-﻿namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req
+﻿namespace knowledge_sharing_platform_cloud.Models.DTO
 {
-    public class CreateChannelReq
+    public class ChannelSummaryDTO
     {
+        public long ChannelOwnerId { get; set; }
+
         public string Topic { get; set; }
 
         public string Description { get; set; }
-        
+
         public string? ChannelImgUrl { get; set; }
 
         public string? ChannelImgBackground { get; set; }
 
-        public long UserId { get; set; }
-
         public decimal SubscriptionFee { get; set; }
-
     }
 }

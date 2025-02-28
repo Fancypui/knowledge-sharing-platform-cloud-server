@@ -1,7 +1,7 @@
 ﻿namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Resp
 {
-    public class JoinChannelResp
+    public class CreateUserResp
     {
-        public string PaymentLinkUrl {  get; set; }
+        public long UserId { get; set; }
     }
 }

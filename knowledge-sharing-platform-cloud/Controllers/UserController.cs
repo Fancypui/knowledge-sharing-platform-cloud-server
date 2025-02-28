@@ -1,5 +1,8 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Repositories;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
+using knowledge_sharing_platform_cloud.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace knowledge_sharing_platform_cloud.Controllers
@@ -8,28 +11,37 @@ namespace knowledge_sharing_platform_cloud.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        private readonly UserRepo _userRepo;
+        private readonly IUserService _userService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(UserRepo userRepo, ILogger<UserController> logger)
+        public UserController(IUserService userService, ILogger<UserController> logger)
         {
-            _userRepo = userRepo;
+            _userService = userService;
             _logger = logger;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(User user)
+        public async Task<ApiResult<CreateUserResp>> CreateUser(CreateUserReq createUserReq)
         {
-            try
-            {
-                var newUser = await _userRepo.CreateUserAsync(user);
-                return CreatedAtAction(nameof(CreateUser), newUser);
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError(ex.InnerException?.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.InnerException?.Message);
-            }
+            CreateUserResp createUserResp = await _userService.CreateUser(createUserReq);
+
+            return ApiResult<CreateUserResp>.ServiceSucess(createUserResp);
+        }
+
+        [HttpGet("joinedChannels")]
+        public async Task<ApiResult<IEnumerable<UserJoinedChannelListResp>>> UserJoinedChannelList([FromQuery] UserJoinedChannelListReq userJoinedChannelListReq)
+        {
+            IEnumerable<UserJoinedChannelListResp> userJoinedChannelListResp = await _userService.UserJoinedChannelList(userJoinedChannelListReq);
+
+            return ApiResult<IEnumerable<UserJoinedChannelListResp>>.ServiceSucess(userJoinedChannelListResp);
+        }
+
+        [HttpGet("managedChannels")]
+        public async Task<ApiResult<IEnumerable<UserManagedChannelListResp>>> UserManagedChannelList([FromQuery] UserManagedChannelListReq userManagedChannelListReq)
+        {
+            IEnumerable<UserManagedChannelListResp> userManagedChannelListResp = await _userService.UserManagedChannelList(userManagedChannelListReq);
+
+            return ApiResult<IEnumerable<UserManagedChannelListResp>>.ServiceSucess(userManagedChannelListResp);
         }
     }
 }

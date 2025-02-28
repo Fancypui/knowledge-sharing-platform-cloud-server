@@ -1,4 +1,5 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
 {

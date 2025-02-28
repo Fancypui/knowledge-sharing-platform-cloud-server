@@ -1,4 +1,6 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models.Channel;
+using knowledge_sharing_platform_cloud.Data.Models.Comment;
+using Microsoft.EntityFrameworkCore;
 using System.Formats.Asn1;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
@@ -22,6 +24,36 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         public async Task<Channel> GetChannelbyIdAsync(long id)
         {
             return await _channelContext.Channel.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<Channel>> GetChannelByIds(List<long> ids)
+        {
+            return await _channelContext.Channel
+                .Where(c => ids.Contains(c.Id))
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Channel>> GetChannelByUserId(long userId)
+        {
+            return await _channelContext.Channel
+                .Where(c => c.UserId == userId)
+                .ToListAsync();
+        }
+        public async Task<int> IncreaseTotalMemberByOne(long channelId)
+        {
+            return await _channelContext.Channel
+                .Where(c => c.Id == channelId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalMember, c => c.TotalMember + 1));
+        }
+
+        public async Task<IEnumerable<string>> GetChannelByName(string topicName)
+        {
+            var channelList = await _channelContext.Channel
+                .Where(c => EF.Functions.Like(c.Topic, $"%{topicName}%"))
+                .Select(c => c.Topic)
+                .ToListAsync();
+
+            return channelList;
         }
     }
 }

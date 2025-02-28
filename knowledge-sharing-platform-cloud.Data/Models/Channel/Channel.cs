@@ -36,5 +36,14 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Channel
 
         [Column("stripe_price_id")]
         public string StripePriceId {  get; set; }
+
+        [Column("total_member")]
+        public int TotalMember {  get; set; }
+
+        [Column("total_post")]
+        public int TotalPost {  get; set; }
+
+        [Column("created_time")]
+        public DateTime CreatedTime { get; set; }
     }
 }
