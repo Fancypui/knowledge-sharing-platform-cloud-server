@@ -9,14 +9,20 @@ namespace knowledge_sharing_platform_cloud.Constant
         /**
          * %d means id here
          */
-        public const string COMMENT_LIST_KEY = "comment_index:post_%d:root_%d";
+        //public const string COMMENT_LIST_KEY = "comment_index:post_%d:root_%d";
 
         /**
-         * 
+         * individual comment info
          */
         public const string COMMENT_DETAIL = "comment_index:commentId_{0}";
 
         public const string USER_INFO = "user_info:userid_{0}";
+
+        /**
+         * channel leaderboard list
+         */
+        public const string CHANNEL_LEADERBOARD = "channel_leaderboard";
+
 
         /**
          * format key

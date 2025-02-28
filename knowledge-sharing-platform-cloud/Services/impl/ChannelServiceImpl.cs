@@ -1,7 +1,6 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Repositories;
-using knowledge_sharing_platform_cloud.ExceptionHandler;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using Stripe;

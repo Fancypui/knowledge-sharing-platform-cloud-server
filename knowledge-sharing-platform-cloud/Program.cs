@@ -1,5 +1,4 @@
 using knowledge_sharing_platform_cloud.Cache;
-using knowledge_sharing_platform_cloud.config;
 using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using knowledge_sharing_platform_cloud.Data.Models.Channel;
@@ -7,10 +6,11 @@ using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Services;
 using knowledge_sharing_platform_cloud.Services.impl;
-using knowledge_sharing_platform_cloud.Services;
-using knowledge_sharing_platform_cloud.Services.impl;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using knowledge_sharing_platform_cloud.Websocket;
+using knowledge_sharing_platform_cloud.Models.DTO;
+using knowledge_sharing_platform_cloud.Services.Consumer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +33,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddScoped<CommentCache,CommentCache>();
 builder.Services.AddScoped<UserCache,UserCache>();
 builder.Services.AddScoped<ICommentSerivce, CommentServiceImpl>();
+builder.Services.AddSingleton<IWebsocketService, WebsocketServiceImpl>();
 builder.Services.AddScoped<UserRepo, UserRepo>();
 builder.Services.AddScoped<CommentRepo, CommentRepo>();
 builder.Services.AddScoped<UserContext, UserContext>();
@@ -52,6 +53,64 @@ builder.Services.AddTransient<ChannelRepo>();
 builder.Services.AddTransient<ChannelContext>();
 builder.Services.AddTransient<IChannelService, ChannelServiceImpl>();
 
+
+/*
+ * Websocket handler dependency injection
+ * use to handle websocket related operation
+ */
+builder.Services.AddSingleton<WebsocketHandler,WebsocketHandler>();
+
+/**
+ * SNS SQS Config
+ */
+var awsOptions = new Amazon.Extensions.NETCore.Setup.AWSOptions
+{
+    Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"]),
+    Credentials = new Amazon.Runtime.SessionAWSCredentials(
+        builder.Configuration["AWS:AccessKey"],
+        builder.Configuration["AWS:SecretKey"],
+        builder.Configuration["AWS:SessionToken"])
+};
+builder.Services.AddDefaultAWSOptions(awsOptions);
+var snsPushNotificationARN = builder.Configuration.GetValue<string>("AWS:SNSPushNotificationArn");
+var sqsPushNotificationQueueARN = builder.Configuration.GetValue<string>("AWS:SQSPushNotificationQueueARN");
+var sqsRedisChannelLeaderBoardARN = builder.Configuration.GetValue<string>("AWS:SQSRedisChannelLeaderBoardARN");
+
+builder.Services.AddAWSMessageBus(builder =>
+{
+    /**
+     * register sns publisher (push notification topic)
+     */
+    builder.AddSNSPublisher<ChannelLeaderboardDTO>(snsPushNotificationARN);
+    /**
+     * register sqs publisher (queue to update channel leaderboard in redis)
+     */
+    builder.AddSQSPublisher<ChannelLeaderboardDTO>(sqsRedisChannelLeaderBoardARN);
+    /**
+     * register sqs queue (push notification queue) to poll messages
+     */
+    builder.AddSQSPoller(sqsPushNotificationQueueARN, options =>
+    {
+        // The maximum number of messages from this queue that the framework will process concurrently on this client
+        options.MaxNumberOfConcurrentMessages = 10;
+
+        // The duration each call to SQS will wait for new messages
+        options.WaitTimeSeconds = 20;
+    });
+    /**
+     * register sqs queue (event to update channel leaderboard in redis) to poll messages
+     */
+    builder.AddSQSPoller(sqsRedisChannelLeaderBoardARN, options =>
+    {
+        // The maximum number of messages from this queue that the framework will process concurrently on this client
+        options.MaxNumberOfConcurrentMessages = 10;
+
+        // The duration each call to SQS will wait for new messages
+        options.WaitTimeSeconds = 20;
+    });
+    builder.AddMessageHandler<PushNotificationConsumer,ChannelLeaderboardDTO> ();
+
+});
 var app = builder.Build();
 app.UseExceptionHandler(options => { });
 // Configure the HTTP request pipeline.
@@ -64,6 +123,17 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+/**
+ * ping frame to client every two minutes
+ */
+var websocketOptions = new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromMinutes(2)
+};
+/**
+ * register websocket middleware
+ */
+app.UseWebSockets(websocketOptions);
 
 app.MapControllers();
 

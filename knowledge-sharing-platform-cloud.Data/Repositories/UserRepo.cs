@@ -1,4 +1,5 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
 {
@@ -23,8 +24,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         public async Task<IEnumerable<User>> userListByIds(List<long> userIds)
         {
             return await _userContext.User
-                    .Where(c => userIds.Contains(c.Id))
-                    .ToListAsync();
+                    .Where(c => userIds.Contains(c.Id)).ToListAsync();
         }
 
         public async Task<User> GetUserByIdAsync(long id)

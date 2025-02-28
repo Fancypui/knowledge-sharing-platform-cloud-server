@@ -28,7 +28,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
 
                 return CreatedAtAction(nameof(CreateChannel), createChannelResp);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 _logger.LogError(ex.InnerException?.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.InnerException?.Message);
@@ -44,7 +44,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
 
                 return CreatedAtAction(nameof(JoinChannel), joinChannelResp.Data);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 _logger.LogError(ex.InnerException?.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.InnerException?.Message);
