@@ -20,35 +20,43 @@ namespace knowledge_sharing_platform_cloud.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateChannel(CreateChannelReq createChannelReq)
+        public async Task<ApiResult<CreateChannelResp>> CreateChannel(CreateChannelReq createChannelReq)
         {
-            try
-            {
-                CreateChannelResp createChannelResp = await _channelService.CreateChannel(createChannelReq);
+            CreateChannelResp createChannelResp = await _channelService.CreateChannel(createChannelReq);
 
-                return CreatedAtAction(nameof(CreateChannel), createChannelResp);
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError(ex.InnerException?.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.InnerException?.Message);
-            }
+            return ApiResult<CreateChannelResp>.ServiceSucess(createChannelResp);
         }
 
         [HttpPost("join")]
-        public async Task<IActionResult> JoinChannel(JoinChannelReq joinChannelReq)
+        public async Task<ApiResult<JoinChannelResp>> JoinChannel(JoinChannelReq joinChannelReq)
         {
-            try
-            {
-                ApiResult<JoinChannelResp> joinChannelResp = await _channelService.JoinChannel(joinChannelReq);
+            JoinChannelResp joinChannelResp = await _channelService.JoinChannel(joinChannelReq);
 
-                return CreatedAtAction(nameof(JoinChannel), joinChannelResp.Data);
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError(ex.InnerException?.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.InnerException?.Message);
-            }
+            return ApiResult<JoinChannelResp>.ServiceSucess(joinChannelResp);
+        }
+
+        [HttpGet("summary")]
+        public async Task<ApiResult<GetChannelSummaryResp>> GetChannelSummary([FromQuery]GetChannelSummaryReq getChannelSummaryReq)
+        {
+            GetChannelSummaryResp getChannelSummaryResp = await _channelService.GetChannelSummary(getChannelSummaryReq);
+
+            return ApiResult<GetChannelSummaryResp>.ServiceSucess(getChannelSummaryResp);
+        }
+
+        [HttpGet("ownerSummary")]
+        public async Task<ApiResult<GetChannelOwnerSummaryResp>> GetChannelOwnerSummary([FromQuery]GetChannelOwnerSummaryReq getChannelOwnerSummaryReq)
+        {
+            GetChannelOwnerSummaryResp getChannelOwnerSummaryResp = await _channelService.GetChannelOwnerSummary(getChannelOwnerSummaryReq);
+
+            return ApiResult<GetChannelOwnerSummaryResp>.ServiceSucess(getChannelOwnerSummaryResp);
+        }
+
+        [HttpGet("search")]
+        public async Task<ApiResult<IEnumerable<string>>> SearchChannelByTopic([FromQuery] string channelTopic)
+        {
+            IEnumerable<string> channelList= await _channelService.SearchChannelByTopic(channelTopic);
+
+            return ApiResult<IEnumerable<string>>.ServiceSucess(channelList);
         }
     }
 }

@@ -18,6 +18,8 @@ namespace knowledge_sharing_platform_cloud.Constant
 
         public const string USER_INFO = "user_info:userid_{0}";
 
+        public const string CHANNEL_SUMMARY = "channel_summary:channelId_{0}";
+
         /**
          * channel leaderboard list
          */

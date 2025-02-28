@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using knowledge_sharing_platform_cloud.Services;
+using Microsoft.AspNetCore.Mvc;
 using Stripe;
 
 namespace knowledge_sharing_platform_cloud.Controllers
@@ -7,11 +8,13 @@ namespace knowledge_sharing_platform_cloud.Controllers
     [ApiController]
     public class WebhookController : Controller
     {
+        private readonly IChannelService _channelService;
         private readonly ILogger<WebhookController> _logger;
         private readonly IConfiguration _configuration;
 
-        public WebhookController(ILogger<WebhookController> logger,IConfiguration configuration)
+        public WebhookController(IChannelService channelService, ILogger<WebhookController> logger,IConfiguration configuration)
         {
+            _channelService = channelService;
             _logger = logger;
             _configuration = configuration;
         }
@@ -26,11 +29,19 @@ namespace knowledge_sharing_platform_cloud.Controllers
             {
                 var stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, _configuration["StripeWebhookSecretKey"]);
 
-                Console.WriteLine(stripeEvent.Type); 
-
-                if (stripeEvent.Type == "payment_intent.succeeded")
+                if (stripeEvent.Type == "checkout.session.completed")
                 {
-                    Console.WriteLine("✅ Payment succeeded!");
+                    var checkoutSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
+
+                    if (checkoutSession.PaymentStatus == "paid")
+                    {
+                        var userId = checkoutSession.Metadata["userId"];
+                        var channelId = checkoutSession.Metadata["channelId"];
+                        decimal totalPaid = (decimal)checkoutSession.AmountTotal;
+                        
+                        _channelService.JoinChannelSuccess(userId, channelId, totalPaid);
+                    }
+
                 }
 
                 return Ok();

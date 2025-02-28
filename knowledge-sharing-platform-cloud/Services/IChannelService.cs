@@ -8,6 +8,14 @@ namespace knowledge_sharing_platform_cloud.Services
     {
         Task<CreateChannelResp> CreateChannel(CreateChannelReq channel);
 
-        Task<ApiResult<JoinChannelResp>> JoinChannel(JoinChannelReq channel);
+        Task<JoinChannelResp> JoinChannel(JoinChannelReq channel);
+
+        Task<String> JoinChannelSuccess(string userId, string channelId, decimal feePaid);
+                                              
+        Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq);
+
+        Task<GetChannelOwnerSummaryResp> GetChannelOwnerSummary(GetChannelOwnerSummaryReq getChannelOwnerSummaryReq);
+
+        Task<IEnumerable<string>> SearchChannelByTopic(string channelTopic)
     }
 }

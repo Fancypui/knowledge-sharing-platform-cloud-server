@@ -1,6 +1,10 @@
-﻿using knowledge_sharing_platform_cloud.Data.Models;
+﻿using knowledge_sharing_platform_cloud.Cache;
+using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Models.Channel;
+using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
 using knowledge_sharing_platform_cloud.Data.Repositories;
+using knowledge_sharing_platform_cloud.Exception;
+using knowledge_sharing_platform_cloud.Models.DTO;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using Stripe;
@@ -11,12 +15,31 @@ namespace knowledge_sharing_platform_cloud.Services.impl
     {
         private readonly ChannelRepo _channelRepo;
         private readonly UserRepo _userRepo;
+        private readonly ChannelMemberRepo _channelMemberRepo;
+
+        private readonly ChannelSummaryCache _channelSummaryCache;
+        private readonly UserCache _userCache;
+
+        private readonly IStripeService _stripeService;
         private readonly IConfiguration _configuration;
 
-        public ChannelServiceImpl(ChannelRepo channelRepo, UserRepo userRepo, IConfiguration configuration)
+        public ChannelServiceImpl(
+            ChannelRepo channelRepo,
+            UserRepo userRepo,
+            ChannelMemberRepo channelMemberRepo,
+            ChannelSummaryCache channelSummaryCache,
+            UserCache userCache,
+            IStripeService stripeService,
+            IConfiguration configuration)
         {
             _channelRepo = channelRepo;
             _userRepo = userRepo;
+            _channelMemberRepo = channelMemberRepo;
+
+            _channelSummaryCache = channelSummaryCache;
+            _userCache = userCache;
+
+            _stripeService = stripeService;
             _configuration = configuration;
 
             StripeConfiguration.ApiKey = _configuration["StripeApiSecretKey"];
@@ -24,56 +47,38 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<CreateChannelResp> CreateChannel(CreateChannelReq createChannelReq)
         {
-            User user = await _userRepo.GetUserByIdAsync(createChannelReq.userId);
+            User user = await _userRepo.GetUserByIdAsync(createChannelReq.UserId);
+
+            if (user == null)
+            {
+                throw new BusinessException((int)CommonErrorEnum.BUSINESS_ERROR, "Fail to create channel. User does not exist in db");
+            }
 
             // create new Stripe Account for users who create a channel for the first time
             if (user.StripeAccountId == null) {
-                var accountOptions = new AccountCreateOptions
-                {
-                    Country = "MY",
-                    Email = user.Email,
-                    Capabilities = new AccountCapabilitiesOptions
-                    {
-                        CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },
-                        Transfers = new AccountCapabilitiesTransfersOptions { Requested = true },
-                        LinkPayments = new AccountCapabilitiesLinkPaymentsOptions { Requested = true },
-                    }
-                };
-                var accountService = new AccountService();
-                var newAccount = accountService.Create(accountOptions);
+                Account newAccount = _stripeService.CreateStripeAccount(user);
 
                 user.StripeAccountId = newAccount.Id;
 
                 await _userRepo.UpdateUserAsync(user);
             };
 
-            // connect to the user Stripe account
-            var connectAccountOption = new RequestOptions
-            {
-                StripeAccount = user.StripeAccountId,
-            };
-
             // create the channel as a product in the user's Stripe account
-            var priceOption = new PriceCreateOptions
-            {
-                Currency = "myr",
-                UnitAmount = (long?)createChannelReq.subscriptionFee * 100,
-                ProductData = new PriceProductDataOptions { Name = createChannelReq.topic },
-            };
-
-            var priceService = new PriceService();
-            var newPrice = priceService.Create(priceOption, connectAccountOption);
+            string userStripeAccountId = user.StripeAccountId;
+            decimal productPrice = createChannelReq.SubscriptionFee;
+            string productName = createChannelReq.Topic;
+            Price channelAsStripeProduct = _stripeService.CreateStripeProductPrice(userStripeAccountId, productPrice, productName);
 
             // create new record of channel in db
             Channel newChannel = new()
             {
-                Topic = createChannelReq.topic,
-                Description = createChannelReq.description,
-                UserId = createChannelReq.userId,
-                ChannelImgUrl = createChannelReq.channelImgUrl,
-                ChannelImgBackground = createChannelReq.channelImgBackground,
-                SubscriptionFee = createChannelReq.subscriptionFee,
-                StripePriceId = newPrice.Id,
+                Topic = createChannelReq.Topic,
+                Description = createChannelReq.Description,
+                UserId = createChannelReq.UserId,
+                ChannelImgUrl = createChannelReq.ChannelImgUrl,
+                ChannelImgBackground = createChannelReq.ChannelImgBackground,
+                SubscriptionFee = createChannelReq.SubscriptionFee,
+                StripePriceId = channelAsStripeProduct.Id,
             };
 
             await _channelRepo.CreateChannelAsync(newChannel);
@@ -86,51 +91,136 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response; 
         }
 
-        public async Task<ApiResult<JoinChannelResp>> JoinChannel(JoinChannelReq joinChannelReq)
+        public async Task<JoinChannelResp> JoinChannel(JoinChannelReq joinChannelReq)
         {
-            Channel channelToBeJoined = await _channelRepo.GetChannelbyIdAsync(joinChannelReq.channelId);
+            Channel channelToBeJoined = await _channelRepo.GetChannelbyIdAsync(joinChannelReq.ChannelId);
 
             if (channelToBeJoined == null)
             {
-                return ApiResult<JoinChannelResp>.ServiceFail(1, "Channel does not exist");
+                throw new BusinessException((int)CommonErrorEnum.BUSINESS_ERROR, "Fail to join channel. Channel does not exist in db");
             }
 
             User channelCreator = await _userRepo.GetUserByIdAsync(channelToBeJoined.UserId);
 
             if (channelCreator == null)
             {
-                return ApiResult<JoinChannelResp>.ServiceFail(1, "Channel creator does not exist");
+                throw new BusinessException((int)CommonErrorEnum.BUSINESS_ERROR, "Fail to join channel. Channel creator does not exist in db");
             }
 
-            var accountOptions = new RequestOptions
+            if (channelCreator.StripeAccountId == null)
             {
-                StripeAccount = channelCreator.StripeAccountId,
-            };
+                throw new BusinessException((int)CommonErrorEnum.BUSINESS_ERROR, "Fail to join channel. Channel creator does not have a Stripe account");
+            }
 
-            var paymentLinkOptions = new PaymentLinkCreateOptions
-            {
-                LineItems = new List<PaymentLinkLineItemOptions>
-                {
-                    new PaymentLinkLineItemOptions {
-                        Price = channelToBeJoined.StripePriceId,
-                        Quantity = 1,
-                    },
-                },
-                Metadata = new Dictionary<string, string>
-                {
-                    { "userId", joinChannelReq.userId.ToString() }
-                }
-            };
-
-            var paymentLinkService = new PaymentLinkService();
-            var paymentLink = paymentLinkService.Create(paymentLinkOptions, accountOptions);
+            // generate a Stripe payment link for the user to join a specific channel
+            string channelCreatorStripeAccountId = channelCreator.StripeAccountId;
+            string channelStripePriceId = channelToBeJoined.StripePriceId;
+            long subscriberUserId = joinChannelReq.UserId;
+            long channelId = joinChannelReq.ChannelId;
+            PaymentLink paymentLink = _stripeService.CreateStripePaymentLink(channelCreatorStripeAccountId, channelStripePriceId, subscriberUserId, channelId);
 
             JoinChannelResp response = new()
             {
-                paymentLinkUrl = paymentLink.Url
+                PaymentLinkUrl = paymentLink.Url
             };
 
-            return ApiResult<JoinChannelResp>.ServiceSucess(response);
+            return response;
+        }
+
+        public async Task<String> JoinChannelSuccess(string userId, string channelId, decimal feePaid)
+        {
+            ChannelMember channelMember = new()
+            {
+                UserId = long.Parse(userId),
+                ChannelId = long.Parse(channelId),
+                SubscriptionFeePaid = feePaid,
+            };
+
+            await _channelMemberRepo.CreateChanneMemberlAsync(channelMember);
+
+            await _channelRepo.IncreaseTotalMemberByOne(long.Parse(channelId));
+
+            // push 
+
+            return "nice";
+        }
+
+        public async Task<String> JoinChannelFail(string userId, string channelId, decimal feePaid)
+        {
+            ChannelMember channelMember = new()
+            {
+                UserId = long.Parse(userId),
+                ChannelId = long.Parse(channelId),
+                SubscriptionFeePaid = feePaid,
+            };
+
+            await _channelMemberRepo.CreateChanneMemberlAsync(channelMember);
+
+            // use websocket to emit message to FE on payment success
+
+            return "nice";
+        }
+
+        public async Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq)
+        {
+            Channel channel = await _channelRepo.GetChannelbyIdAsync(getChannelSummaryReq.ChannelId);
+
+            if (channel == null)
+            {
+                throw new BusinessException((int)CommonErrorEnum.BUSINESS_ERROR, "Fail to get channel summary. Channel does not exist in db");
+            }
+
+            TimeSpan channelOperationDuration = DateTime.Now - channel.CreatedTime;
+
+            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(getChannelSummaryReq.UserId, getChannelSummaryReq.ChannelId)
+
+            GetChannelSummaryResp response = new()
+            {
+                ChannelId = channel.Id,
+                Topic = channel.Topic,
+                Description = channel.Description,
+                ChannelImgUrl = channel.ChannelImgUrl,
+                ChannelImgBackground = channel.ChannelImgBackground,
+                TotalMember = channel.TotalMember,
+                TotalPost  = channel.TotalPost,
+                OperationDuration = channelOperationDuration.TotalDays,
+                SubscriptionFee = isUserJoinedChannel ? channel.SubscriptionFee : null
+            };
+
+            return response;    
+        }
+
+        public async Task<GetChannelOwnerSummaryResp> GetChannelOwnerSummary(GetChannelOwnerSummaryReq getChannelOwnerSummaryReq)
+        {
+            Channel channel = await _channelRepo.GetChannelbyIdAsync(getChannelOwnerSummaryReq.ChannelId);
+
+            if (channel == null)
+            {
+                throw new BusinessException((int)CommonErrorEnum.BUSINESS_ERROR, "Fail to get channel owner summary. Channel does not exist in db");
+            }
+
+            User channelOwner = await _userRepo.GetUserByIdAsync(channel.UserId);
+
+            if (channelOwner == null)
+            {
+                throw new BusinessException((int)CommonErrorEnum.BUSINESS_ERROR, "Fail to get channel owner summary. Channel owner account does not exist in db");
+            }
+
+            GetChannelOwnerSummaryResp response = new()
+            {
+                ChannelId = channel.Id,
+                UserId = channel.UserId,
+                Username = channelOwner.Username,
+                UserDescription = channelOwner.Description,
+                UserProfileUrl = channelOwner.ProfileUrl
+            };
+
+            return response;
+        }
+
+        public async Task<IEnumerable<string>> SearchChannelByTopic(string channelTopic)
+        {
+            return await _channelRepo.GetChannelByName(channelTopic);
         }
     }
 }
