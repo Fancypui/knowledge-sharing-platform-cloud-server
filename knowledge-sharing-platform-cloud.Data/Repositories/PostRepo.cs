@@ -30,6 +30,37 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             return await _postContext.Post
             .Where(p => p.Id == postId && !p.DeletedStatus)
             .FirstOrDefaultAsync();
-        } 
+        }
+
+        public async Task<List<Post>> GetPostPage(long? cursor, int pageSize, long channelCategoryId)
+        {
+            if (cursor.HasValue && cursor > 0)
+            {
+                return await _postContext.Post
+                .Where(p => p.CategoryId == channelCategoryId && !p.DeletedStatus)
+                .Where(p => p.Id < cursor)
+                .OrderByDescending(p => p.Id)
+                .Take(pageSize) // Fetch only pageSize posts
+                .ToListAsync();
+
+            }
+            else
+            {
+                return await _postContext.Post
+                .Where(p => p.CategoryId == channelCategoryId && !p.DeletedStatus)
+                .OrderByDescending(p => p.Id)
+                .Take(pageSize) // Fetch only pageSize posts
+                .ToListAsync();
+            }
+
+            
+        }
+
+        public async Task<List<Post>> GetPostImgUrlsByIds(List<long> ids)
+        {
+            return await _postContext.Post
+                .Where(p => ids.Contains(p.Id) && !p.DeletedStatus)
+                .ToListAsync();
+        }
     }
 }

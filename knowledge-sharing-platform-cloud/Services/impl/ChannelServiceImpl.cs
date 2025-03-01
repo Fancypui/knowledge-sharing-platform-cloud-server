@@ -5,7 +5,9 @@ using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.DTO;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.ChannelReq;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.ChannelResp;
 using Stripe;
 
@@ -16,9 +18,12 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly ChannelRepo _channelRepo;
         private readonly UserRepo _userRepo;
         private readonly ChannelMemberRepo _channelMemberRepo;
-
         private readonly IStripeService _stripeService;
+        private readonly ChannelSummaryCache _channelSummaryCache;
+        private readonly UserCache _userCache;
+        private readonly ChannelLeaderboardCache _leaderboardCache;
 
+        private readonly IConfiguration _configuration;
         public ChannelServiceImpl(
             ChannelRepo channelRepo,
             UserRepo userRepo,
@@ -28,13 +33,15 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             IStripeService stripeService,
             ChannelLeaderboardCache leaderboardCache,
             IConfiguration configuration)
-            IStripeService stripeService)
         {
             _channelRepo = channelRepo;
             _userRepo = userRepo;
             _channelMemberRepo = channelMemberRepo;
-
             _stripeService = stripeService;
+            _channelSummaryCache = channelSummaryCache;
+            _userCache = userCache;
+            _leaderboardCache = leaderboardCache;
+            _configuration = configuration;
         }
 
         public async Task<CreateChannelResp> CreateChannel(CreateChannelReq createChannelReq)
@@ -270,7 +277,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             {
                 cursor = cursor + listData.Count();
             }
-            long? nextCursor = listData.Any() ? listData.Max(x => x.ChannelId) : null;
+            //long? nextCursor = listData.Any() ? listData.Max(x => x.ChannelId) : null;
             return CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>.Init(new List<IEnumerable<ChannelLeaderboardListResp>> { listData }, cursor, listData.Count() < request.PageSize);
 
 

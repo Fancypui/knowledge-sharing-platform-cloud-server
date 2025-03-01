@@ -47,7 +47,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
         [HttpGet("url")]
         public async Task<ApiResult<GetS3PresignedUrlResp>> GetS3PresignedUrl([FromQuery] GetS3PresignedUrlReq getS3PresignedUrlReq)
         {
-            GetS3PresignedUrlResp getS3PresignedUrlResp = await _s3Service.GeneratePresignedUrl(getS3PresignedUrlReq);
+            GetS3PresignedUrlResp getS3PresignedUrlResp = await _s3Service.GeneratePresignedUrlToUpload(getS3PresignedUrlReq);
 
             return ApiResult<GetS3PresignedUrlResp>.ServiceSucess(getS3PresignedUrlResp);
         }

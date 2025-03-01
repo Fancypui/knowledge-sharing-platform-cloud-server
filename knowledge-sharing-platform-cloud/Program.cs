@@ -38,6 +38,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<CommentCache,CommentCache>();
+builder.Services.AddScoped<PostImgUrlsCache, PostImgUrlsCache>();
 builder.Services.AddScoped<UserCache,UserCache>();
 builder.Services.AddScoped<ChannelSummaryCache,ChannelSummaryCache>();
 builder.Services.AddScoped<ChannelLeaderboardCache, ChannelLeaderboardCache>();

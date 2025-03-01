@@ -24,6 +24,10 @@ namespace knowledge_sharing_platform_cloud.Constant
          * channel leaderboard list
          */
         public const string CHANNEL_LEADERBOARD = "channel_leaderboard";
+        /**
+         * Post image presigned urls
+         */
+        public const string POST_IMAGE_PRESIGNED_URLS = "post_image_presigned_urls:post_{0}";
 
 
         /**

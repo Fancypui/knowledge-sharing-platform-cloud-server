@@ -2,6 +2,7 @@
 {
     public class PostImageUrlDTO
     {
-        public string ImageUrl { get; set; }
+        public long PostId { get; set; }
+        public string[] ImageUrl { get; set; }
     }
 }
