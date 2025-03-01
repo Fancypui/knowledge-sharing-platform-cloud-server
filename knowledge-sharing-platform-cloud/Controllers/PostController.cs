@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace knowledge_sharing_platform_cloud.Controllers
 {
-    [Route("controller")]
+    [Route("post")]
     [ApiController]
     public class PostController : Controller
     {
