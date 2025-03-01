@@ -22,7 +22,7 @@ namespace knowledge_sharing_platform_cloud.Cache
 
         public override async Task<Dictionary<long, User>> Load(List<long> keys)
         {
-            var userList = await _userRepo.userListByIds(keys);
+            var userList = await _userRepo.UserListByIds(keys);
             return userList.ToDictionary(c => c.Id, c => c);
         }
     }

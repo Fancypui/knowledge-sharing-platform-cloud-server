@@ -30,7 +30,6 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             ChannelMemberRepo channelMemberRepo,
             ChannelSummaryCache channelSummaryCache,
             UserCache userCache,
-            IStripeService stripeService,
             ChannelLeaderboardCache leaderboardCache,
             IConfiguration configuration)
         {

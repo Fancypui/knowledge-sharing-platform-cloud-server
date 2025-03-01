@@ -21,7 +21,6 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>> ChannelLeaderboardList(CursorBaseReq request);
 
-        
         Task<IEnumerable<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq);
     }
 }

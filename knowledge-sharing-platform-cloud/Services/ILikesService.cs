@@ -6,5 +6,7 @@ namespace knowledge_sharing_platform_cloud.Services
     public interface ILikesService
     {
         Task<LikeDislikePostResp> LikeDislikePost(LikeDislikePostReq likeDislikePostReq);
+
+        Task<IEnumerable<UsersWhoLikedPostListResp>> UsersWhoLikedPostList(UsersWhoLikedPostListReq usersWhoLikedPostListReq);
     }
 }

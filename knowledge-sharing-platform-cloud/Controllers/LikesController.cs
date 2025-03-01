@@ -25,6 +25,14 @@ namespace knowledge_sharing_platform_cloud.Controllers
             LikeDislikePostResp likeDislikePostResp = await _likesService.LikeDislikePost(likeDislikePostReq);
 
             return ApiResult<LikeDislikePostResp>.ServiceSucess(likeDislikePostResp);
-        }  
+        }
+
+        [HttpGet("post")]
+        public async Task<ApiResult<IEnumerable<UsersWhoLikedPostListResp>>> UserWhoLikedPostList([FromQuery] UsersWhoLikedPostListReq usersWhoLikedPostListReq)
+        {
+            IEnumerable<UsersWhoLikedPostListResp> usersWhoLikedPostListResp = await _likesService.UsersWhoLikedPostList(usersWhoLikedPostListReq);
+
+            return ApiResult<IEnumerable<UsersWhoLikedPostListResp>>.ServiceSucess(usersWhoLikedPostListResp);
+        }
     }
 }

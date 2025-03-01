@@ -4,7 +4,7 @@ namespace knowledge_sharing_platform_cloud.Constant
 {
     public class RedisConstant
     {
-        public const long KEY_EXPIRY_DURATION = 60L;
+        public const long KEY_EXPIRY_DURATION = 120L;
 
         /**
          * %d means id here

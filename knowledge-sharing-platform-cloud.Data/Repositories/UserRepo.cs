@@ -21,7 +21,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             return user;
         }
 
-        public async Task<IEnumerable<User>> userListByIds(List<long> userIds)
+        public async Task<IEnumerable<User>> UserListByIds(List<long> userIds)
         {
             return await _userContext.User
                     .Where(c => userIds.Contains(c.Id)).ToListAsync();

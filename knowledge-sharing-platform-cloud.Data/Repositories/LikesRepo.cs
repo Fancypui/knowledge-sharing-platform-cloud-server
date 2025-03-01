@@ -1,4 +1,5 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models.Channel;
+using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using knowledge_sharing_platform_cloud.Data.Models.Likes;
 using knowledge_sharing_platform_cloud.Data.Models.Post;
 using Microsoft.EntityFrameworkCore;
@@ -19,10 +20,25 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             _likesContext = context;
         }
 
-        public async Task<bool> ChangeLikeStatus(long userId, long postId, bool likeStatus)
+
+        public async Task<Likes> CreateLikesAsync(Likes like)
+        {
+            _likesContext.Likes.Add(like);
+            await _likesContext.SaveChangesAsync();
+
+            return like;
+        }
+
+        public async Task<Likes> FindLikesByUserIdAndPostIdAsync(long userId,  long postId)
         {
             return await _likesContext.Likes
-                .Where(l => l.UserId == userId && l.PostId == postId)
+                .FirstOrDefaultAsync(like => like.UserId == userId && like.PostId == postId);
+        }
+
+        public async Task<bool> ChangeLikeStatus(long likeId, bool likeStatus)
+        {
+            return await _likesContext.Likes
+                .Where(l => l.Id == likeId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(l => l.LikeStatus, l => likeStatus)) > 0;
         }
 
@@ -34,5 +50,14 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         }
 
 
+
+        public async Task<IEnumerable<Likes>> GetPaginatedLikes(long postId, long? cursor, int pageSize)
+        {
+            var query = _likesContext.Likes
+            .Where(l => l.PostId == postId && l.LikeStatus);
+
+            return await query.Take(pageSize).ToListAsync();
+
+        }
     }
 }
