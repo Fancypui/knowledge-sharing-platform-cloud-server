@@ -12,6 +12,10 @@ using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
 using knowledge_sharing_platform_cloud.Websocket;
 using knowledge_sharing_platform_cloud.Models.DTO;
 using knowledge_sharing_platform_cloud.Services.Consumer;
+using knowledge_sharing_platform_cloud.Data.Models.Category;
+using Amazon.S3;
+using knowledge_sharing_platform_cloud.Data.Models.Post;
+using knowledge_sharing_platform_cloud.Data.Models.Likes;
 using knowledge_sharing_platform_cloud.Data.Models.Post;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,10 +65,25 @@ builder.Services.AddTransient<ChannelRepo>();
 builder.Services.AddTransient<ChannelContext>();
 builder.Services.AddTransient<IChannelService, ChannelServiceImpl>();
 
+builder.Services.AddTransient<CategoryRepo>();
+builder.Services.AddTransient<CategoryContext>();
+builder.Services.AddTransient<ICategoryService, CategoryServiceImpl>();
+
+builder.Services.AddTransient<PostRepo>();
+builder.Services.AddTransient<PostContext>();
+builder.Services.AddTransient<IPostService, PostServiceImpl>();
+
+builder.Services.AddTransient<LikesRepo>();
+builder.Services.AddTransient<LikesContext>();
+builder.Services.AddTransient<ILikesService, LikesServiceImpl>();
+
+
 builder.Services.AddTransient<ChannelMemberRepo>();
 builder.Services.AddTransient<ChannelMemberContext>();
 
 builder.Services.AddTransient<IStripeService, StripeServiceImpl>();
+
+builder.Services.AddTransient<S3Service>();
 
 
 
@@ -77,14 +96,14 @@ builder.Services.AddSingleton<WebsocketHandler,WebsocketHandler>();
 /**
  * SNS SQS Config
  */
-//var awsOptions = new Amazon.Extensions.NETCore.Setup.AWSOptions
-//{
-//    Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"]),
-//    Credentials = new Amazon.Runtime.SessionAWSCredentials(
-//        builder.Configuration["AWS:AccessKey"],
-//        builder.Configuration["AWS:SecretKey"],
-//        builder.Configuration["AWS:SessionToken"])
-//};
+var awsOptions = new Amazon.Extensions.NETCore.Setup.AWSOptions
+{
+    Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"]),
+    Credentials = new Amazon.Runtime.SessionAWSCredentials(
+        builder.Configuration["AWS:AccessKey"],
+        builder.Configuration["AWS:SecretKey"],
+        builder.Configuration["AWS:SessionToken"])
+};
 //builder.Services.AddDefaultAWSOptions(awsOptions);
 //var snsPushNotificationARN = builder.Configuration.GetValue<string>("AWS:SNSPushNotificationArn");
 //var sqsPushNotificationQueueARN = builder.Configuration.GetValue<string>("AWS:SQSPushNotificationQueueARN");
@@ -108,6 +127,57 @@ builder.Services.AddSingleton<WebsocketHandler,WebsocketHandler>();
 //        // The maximum number of messages from this queue that the framework will process concurrently on this client
 //        options.MaxNumberOfConcurrentMessages = 10;
 
+//        // The duration each call to SQS will wait for new messages
+//        options.WaitTimeSeconds = 20;
+//    });
+//    /**
+//     * register sqs queue (event to update channel leaderboard in redis) to poll messages
+//     */
+//    builder.AddSQSPoller(sqsRedisChannelLeaderBoardARN, options =>
+//    {
+//        // The maximum number of messages from this queue that the framework will process concurrently on this client
+//        options.MaxNumberOfConcurrentMessages = 10;
+
+//        // The duration each call to SQS will wait for new messages
+//        options.WaitTimeSeconds = 20;
+//    });
+//    builder.AddMessageHandler<PushNotificationConsumer, PushNotificationDTO> ();
+//var awsOptions = new Amazon.Extensions.NETCore.Setup.AWSOptions
+//{
+//    Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"]),
+//    Credentials = new Amazon.Runtime.SessionAWSCredentials(
+//        builder.Configuration["AWS:AccessKey"],
+//        builder.Configuration["AWS:SecretKey"],
+//        builder.Configuration["AWS:SessionToken"])
+//};
+//builder.Services.AddDefaultAWSOptions(awsOptions);
+//var snsPushNotificationARN = builder.Configuration.GetValue<string>("AWS:SNSPushNotificationArn");
+//var sqsPushNotificationQueueARN = builder.Configuration.GetValue<string>("AWS:SQSPushNotificationQueueARN");
+//var sqsRedisChannelLeaderBoardARN = builder.Configuration.GetValue<string>("AWS:SQSRedisChannelLeaderBoardARN");
+
+//});
+
+//builder.Services.AddAWSMessageBus(builder =>
+//{
+//    /**
+//     * register sns publisher (push notification topic)
+//     */
+//    builder.AddSNSPublisher<PushNotificationDTO>(snsPushNotificationARN);
+//    /**
+//     * register sqs publisher (queue to update channel leaderboard in redis)
+//     */
+//    builder.AddSQSPublisher<ChannelLeaderboardDTO>(sqsRedisChannelLeaderBoardARN);
+//    /**
+//     * register sqs queue (push notification queue) to poll messages
+//     */
+//    builder.AddSQSPoller(sqsPushNotificationQueueARN, options =>
+//    {
+//        // The maximum number of messages from this queue that the framework will process concurrently on this client
+//        options.MaxNumberOfConcurrentMessages = 10;
+
+// setup AWS S3
+builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddAWSService<IAmazonS3>();
 //        // The duration each call to SQS will wait for new messages
 //        options.WaitTimeSeconds = 20;
 //    });

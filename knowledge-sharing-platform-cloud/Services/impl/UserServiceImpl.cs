@@ -4,8 +4,8 @@ using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.DTO;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.UserReq;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.UserResp;
 using Stripe;
 
 namespace knowledge_sharing_platform_cloud.Services.impl

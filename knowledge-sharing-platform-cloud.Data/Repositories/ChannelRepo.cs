@@ -44,18 +44,19 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
         }
-        public async Task<int> IncreaseTotalMemberByOne(long channelId)
+
+        public async Task<bool> IncreaseTotalMemberByOne(long channelId)
         {
             return await _channelContext.Channel
                 .Where(c => c.Id == channelId)
-                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalMember, c => c.TotalMember + 1));
+                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalMember, c => c.TotalMember + 1)) > 0;
         }
 
-        public async Task<IEnumerable<string>> GetChannelByName(string topicName)
+        public async Task<IEnumerable<Channel>> GetChannelByName(string topicName)
         {
             var channelList = await _channelContext.Channel
                 .Where(c => EF.Functions.Like(c.Topic, $"%{topicName}%"))
-                .Select(c => c.Topic)
+                .Take(10)
                 .ToListAsync();
 
             return channelList;
@@ -89,5 +90,11 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         }
 
 
+        public async Task<bool> IncreaseTotalPostByOne(long channelId)
+        {
+            return await _channelContext.Channel
+                .Where(c => c.Id == channelId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalPost, c => c.TotalPost + 1)) > 0;
+        }
     }
 }

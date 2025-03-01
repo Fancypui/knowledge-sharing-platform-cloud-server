@@ -12,8 +12,8 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
     {
         PostContext _postContext;
 
-        public PostRepo(PostContext postContext)
-        {
+        public PostRepo(PostContext postContext) 
+        { 
             _postContext = postContext;
         }
 

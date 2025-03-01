@@ -1,5 +1,6 @@
-﻿using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
+﻿using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.ChannelReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.ChannelResp;
 using knowledge_sharing_platform_cloud.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -52,11 +53,11 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ApiResult<IEnumerable<string>>> SearchChannelByTopic([FromQuery] string channelTopic)
+        public async Task<ApiResult<IEnumerable<SearchChannelByTopicResp>>> SearchChannelByTopic([FromQuery] SearchChannelByTopicReq searchChannelByTopicReq)
         {
-            IEnumerable<string> channelList= await _channelService.SearchChannelByTopic(channelTopic);
+            IEnumerable<SearchChannelByTopicResp> channelList = await _channelService.SearchChannelByTopic(searchChannelByTopicReq);
 
-            return ApiResult<IEnumerable<string>>.ServiceSucess(channelList);
+            return ApiResult<IEnumerable<SearchChannelByTopicResp>>.ServiceSucess(channelList);
         }
         [HttpGet("leaderboard/page")]
         public async Task<ApiResult<CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>>> ChannelLeaderboardPage([FromQuery] CursorBaseReq request)

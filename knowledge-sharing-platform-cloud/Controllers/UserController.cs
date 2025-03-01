@@ -1,7 +1,8 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Repositories;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.UserReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.UserResp;
 using knowledge_sharing_platform_cloud.Services;
 using Microsoft.AspNetCore.Mvc;
 

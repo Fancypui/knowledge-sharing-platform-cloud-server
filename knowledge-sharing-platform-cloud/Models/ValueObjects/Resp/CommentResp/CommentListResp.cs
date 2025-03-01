@@ -1,13 +1,13 @@
-﻿namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Resp
+﻿namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.CommentResp
 {
     /**
      * comment list response type
      */
     public class CommentListResp
     {
-        public string Content {  get; set; }
+        public string Content { get; set; }
 
-        public long SenderUid { get; set; } 
+        public long SenderUid { get; set; }
 
         public long ReceiverUid { get; set; }
 
@@ -17,7 +17,7 @@
 
         public string ReceiverName { get; set; }
 
-        public DateTime ReplyTime{ get; set; }
+        public DateTime ReplyTime { get; set; }
 
         public long PostId { get; set; }
 

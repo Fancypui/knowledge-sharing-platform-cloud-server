@@ -1,5 +1,4 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
-using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using knowledge_sharing_platform_cloud.Data.Models.Category;
+﻿using knowledge_sharing_platform_cloud.Data.Models.Category;
+using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
