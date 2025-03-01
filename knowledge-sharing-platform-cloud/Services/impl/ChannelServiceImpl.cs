@@ -4,8 +4,9 @@ using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
-using knowledge_sharing_platform_cloud.Models.DTO;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.ChannelReq;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.ChannelResp;
 using Stripe;
 
@@ -17,6 +18,12 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly UserRepo _userRepo;
         private readonly ChannelMemberRepo _channelMemberRepo;
 
+        private readonly ChannelSummaryCache _channelSummaryCache;
+        private readonly UserCache _userCache;
+        private readonly ChannelLeaderboardCache _leaderboardCache;
+
+        private readonly IConfiguration _configuration;
+
         private readonly IStripeService _stripeService;
 
         public ChannelServiceImpl(
@@ -25,14 +32,19 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             ChannelMemberRepo channelMemberRepo,
             ChannelSummaryCache channelSummaryCache,
             UserCache userCache,
-            IStripeService stripeService,
             ChannelLeaderboardCache leaderboardCache,
-            IConfiguration configuration)
+            IConfiguration configuration,
             IStripeService stripeService)
         {
             _channelRepo = channelRepo;
             _userRepo = userRepo;
             _channelMemberRepo = channelMemberRepo;
+
+            _channelSummaryCache = channelSummaryCache;
+            _leaderboardCache = leaderboardCache;
+            _userCache = userCache;
+
+            _configuration = configuration;
 
             _stripeService = stripeService;
         }
