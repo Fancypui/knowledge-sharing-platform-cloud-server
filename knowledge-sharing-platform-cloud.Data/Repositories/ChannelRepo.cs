@@ -72,5 +72,11 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             return memberCount; 
 
         }
+        public async Task<bool> IncreaseTotalPostByOne(long channelId)
+        {
+            return await _channelContext.Channel
+                .Where(c => c.Id == channelId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalPost, c => c.TotalPost + 1)) > 0;
+        }
     }
 }

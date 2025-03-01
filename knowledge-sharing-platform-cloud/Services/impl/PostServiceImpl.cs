@@ -1,5 +1,5 @@
-﻿using Amazon.S3;
-using knowledge_sharing_platform_cloud.Data.Models.Category;
+﻿using knowledge_sharing_platform_cloud.Data.Models.Category;
+using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Models.Post;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
@@ -14,11 +14,13 @@ namespace knowledge_sharing_platform_cloud.Services.impl
     {
         PostRepo _postRepo;
         CategoryRepo _categoryRepo;
+        ChannelRepo _channelRepo;
 
-        public PostServiceImpl(PostRepo postRepo, CategoryRepo categoryRepo)
+        public PostServiceImpl(PostRepo postRepo, CategoryRepo categoryRepo, ChannelRepo channelRepo)
         {
             _postRepo = postRepo;
             _categoryRepo = categoryRepo;
+            _channelRepo = channelRepo; 
         }
 
         public async Task<CreatePostResp> CreatePost(CreatePostReq createPostReq)
@@ -46,12 +48,22 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 PostImgUrl = JsonSerializer.Serialize(postImageList, new JsonSerializerOptions { WriteIndented = true })
             };
 
+
+            Channel postChannel = await _channelRepo.GetChannelbyIdAsync(postCategory.ChannelId);
+
+            if (postChannel == null)
+            {
+                throw new BusinessException("Fail to create post. Channel does not exist.");
+            }
+
             Post newPost = await _postRepo.CreatePostAsync(post);
 
             if (newPost == null)
             {
                 throw new BusinessException("Failed to create a new post.");
             }
+
+            await _channelRepo.IncreaseTotalPostByOne(postChannel.Id);
 
             CreatePostResp response = new()
             {

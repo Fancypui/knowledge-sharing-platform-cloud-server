@@ -10,7 +10,7 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Post
     public class Post
     {
         [Column("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [Column("title")]
         public string Title { get; set; }

@@ -15,6 +15,7 @@ using knowledge_sharing_platform_cloud.Services.Consumer;
 using knowledge_sharing_platform_cloud.Data.Models.Category;
 using Amazon.S3;
 using knowledge_sharing_platform_cloud.Data.Models.Post;
+using knowledge_sharing_platform_cloud.Data.Models.Likes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,6 +68,11 @@ builder.Services.AddTransient<ICategoryService, CategoryServiceImpl>();
 builder.Services.AddTransient<PostRepo>();
 builder.Services.AddTransient<PostContext>();
 builder.Services.AddTransient<IPostService, PostServiceImpl>();
+
+builder.Services.AddTransient<LikesRepo>();
+builder.Services.AddTransient<LikesContext>();
+builder.Services.AddTransient<ILikesService, LikesServiceImpl>();
+
 
 builder.Services.AddTransient<ChannelMemberRepo>();
 builder.Services.AddTransient<ChannelMemberContext>();
