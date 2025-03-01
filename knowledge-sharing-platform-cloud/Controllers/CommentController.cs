@@ -18,12 +18,11 @@ namespace knowledge_sharing_platform_cloud.Controllers
     {
         private readonly ILogger<CommentController> _logger;
         private readonly ICommentSerivce _commentSerivce;
-        private readonly IMessagePublisher _messagePublisher;
-        public CommentController(ICommentSerivce commentSerivce, ILogger<CommentController> logger, IMessagePublisher messagePublisher)
+
+        public CommentController(ICommentSerivce commentSerivce, ILogger<CommentController> logger)
         {
             _commentSerivce = commentSerivce;
             _logger = logger;
-            _messagePublisher = messagePublisher;
         }
         [HttpGet]
         public async Task<ApiResult<IEnumerable<CommentListResp>>> CommentList([FromQuery] CommentListReq request)
@@ -31,26 +30,11 @@ namespace knowledge_sharing_platform_cloud.Controllers
                 var resp = await _commentSerivce.CommentList(request);
                 return ApiResult<IEnumerable<CommentListResp>>.ServiceSucess(resp);    
         }
-
-        [HttpGet("testmq")]
-        public async Task<IActionResult> PublishOrder()
+        [HttpPost]
+        public async Task<ApiResult<ReplyPostCommentResp>> ReplyPostComment([FromBody] ReplyPostCommentReq request)
         {
-            var data = new WSRespBase<string>()
-            {
-                Type = (int)WSRespTypeEnum.PAYMENT_SUCESS,
-                Data = "Payment Success",
-            };
-            var message = new ChannelLeaderboardDTO()
-            {
-                UserIdList = new List<long> { 1 },
-                Type = PushNotificationType.SEND_TO_INDIVIDUAL,
-            };
-            message.SetResp(data);
-
-            // Publish the OrderInfo to SNS, using the generic publisher
-            await _messagePublisher.PublishAsync(message);
-
-            return Ok();
+            var resp = await _commentSerivce.ReplyPostComment(request, 1);
+            return ApiResult<ReplyPostCommentResp>.ServiceSucess(resp);
         }
     }
 }

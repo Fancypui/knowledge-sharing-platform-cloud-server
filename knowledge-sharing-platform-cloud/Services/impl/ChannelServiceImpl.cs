@@ -22,6 +22,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         private readonly IStripeService _stripeService;
         private readonly IConfiguration _configuration;
+        private readonly ChannelLeaderboardCache _leaderboardCache;
 
         public ChannelServiceImpl(
             ChannelRepo channelRepo,
@@ -30,6 +31,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             ChannelSummaryCache channelSummaryCache,
             UserCache userCache,
             IStripeService stripeService,
+            ChannelLeaderboardCache leaderboardCache,
             IConfiguration configuration)
         {
             _channelRepo = channelRepo;
@@ -41,7 +43,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             _stripeService = stripeService;
             _configuration = configuration;
-
+            _leaderboardCache = leaderboardCache;
             StripeConfiguration.ApiKey = _configuration["StripeApiSecretKey"];
         }
 
@@ -172,7 +174,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             TimeSpan channelOperationDuration = DateTime.Now - channel.CreatedTime;
 
-            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(getChannelSummaryReq.UserId, getChannelSummaryReq.ChannelId)
+            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(getChannelSummaryReq.UserId, getChannelSummaryReq.ChannelId);
 
             GetChannelSummaryResp response = new()
             {
@@ -221,6 +223,56 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         public async Task<IEnumerable<string>> SearchChannelByTopic(string channelTopic)
         {
             return await _channelRepo.GetChannelByName(channelTopic);
+        }
+
+        public async Task<CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>> ChannelLeaderboardList(CursorBaseReq request)
+        {
+            long? cursor = null;
+            if (!request.IsFirstPage() && long.TryParse(request.Cursor, out var parsedCursor))
+            {
+                cursor = parsedCursor;
+            }
+            /**
+             * get leaderboard from cache
+             */
+            var channelLeaderboardEntries = await _leaderboardCache.GetLeaderboardPage(cursor, request.PageSize);
+            // If channelIds is empty, return an empty list immediately
+            if (channelLeaderboardEntries == null || !channelLeaderboardEntries.Any())
+            {
+                return CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>.empty();
+            }
+            /**
+             * convert the entries into list of channel id
+             */
+            var channelIds = channelLeaderboardEntries.Select(c => c.Id).ToList();
+            var channelSummary = await _channelSummaryCache.GetBatch(channelIds);
+            var listData = channelLeaderboardEntries.Select(entry =>
+            {
+                var channel = channelSummary.GetValueOrDefault(entry.Id, null);
+                return new ChannelLeaderboardListResp
+                {
+                    ChannelTitle = channel?.Topic ?? null,
+                    ChannelId = entry.Id,
+                    TotalMemberCount = entry.TotalMember,
+                    ChannelDescription = channel?.Topic ?? null,
+                    ChannelProfileUrl = channel?.ChannelImgUrl ?? null,
+                    ChannelBackgroundUrl = channel?.ChannelImgUrl ?? null,
+
+                };
+
+            });
+            if (cursor == null)
+            {
+                cursor = request.PageSize;
+            }
+            else
+            {
+                cursor = cursor + listData.Count();
+            }
+            long? nextCursor = listData.Any() ? listData.Max(x => x.ChannelId) : null;
+            return CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>.Init(new List<IEnumerable<ChannelLeaderboardListResp>> { listData }, cursor, listData.Count() < request.PageSize);
+
+
         }
     }
 }

@@ -8,8 +8,11 @@ using System.Threading.Tasks;
 
 namespace knowledge_sharing_platform_cloud.Data.Models.Comment
 {
+   
     public class Comment
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public long Id { get; set; }
         [Column("user_id")]

@@ -16,6 +16,10 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<GetChannelOwnerSummaryResp> GetChannelOwnerSummary(GetChannelOwnerSummaryReq getChannelOwnerSummaryReq);
 
-        Task<IEnumerable<string>> SearchChannelByTopic(string channelTopic)
+        Task<IEnumerable<string>> SearchChannelByTopic(string channelTopic);
+
+        Task<CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>> ChannelLeaderboardList(CursorBaseReq request);
+
+        
     }
 }

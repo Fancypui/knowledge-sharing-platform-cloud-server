@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace knowledge_sharing_platform_cloud.Data.Models.Channel
 {
+
     public class Channel
     {
         [Key]
@@ -14,7 +15,7 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Channel
         public string Topic { get; set; }
 
         [Column("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Column("channel_img_url")]
         public string? ChannelImgUrl { get; set; }
@@ -29,13 +30,13 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Channel
         public long? LastPostId {  get; set; }
 
         [Column("subscription_fee")]
-        public decimal SubscriptionFee {  get; set; }
+        public decimal? SubscriptionFee {  get; set; }
 
         [Column("active_time")]
         public DateTime? ActiveTime {  get; set; }
 
         [Column("stripe_price_id")]
-        public string StripePriceId {  get; set; }
+        public string? StripePriceId {  get; set; }
 
         [Column("total_member")]
         public int TotalMember {  get; set; }

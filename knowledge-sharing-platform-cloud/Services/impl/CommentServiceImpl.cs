@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using knowledge_sharing_platform_cloud.Cache;
+using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using knowledge_sharing_platform_cloud.Data.Repositories;
+using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -17,13 +19,16 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly UserRepo _userRepo;
         private readonly CommentCache _commentCache;
         private readonly UserCache _userCache;  
+        private readonly PostRepo _postRepo;
 
-        public CommentServiceImpl(CommentRepo commentRepo, UserRepo userRepo,CommentCache commentCache, UserCache userCache)
+        public CommentServiceImpl(CommentRepo commentRepo, PostRepo postRepo,
+            UserRepo userRepo,CommentCache commentCache, UserCache userCache)
         {
             _commentRepo = commentRepo;
             _userRepo = userRepo;
             _commentCache = commentCache;   
-            _userCache = userCache; 
+            _userCache = userCache;
+            _postRepo = postRepo;
         }
         public async Task<IEnumerable<CommentListResp>> CommentList(CommentListReq request)
         {
@@ -78,6 +83,63 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                         ParentId = comment.ParentId
                     };
                 }).ToList();
+        }
+
+        public async Task<ReplyPostCommentResp> ReplyPostComment(ReplyPostCommentReq request, long uid)
+        {
+            /**
+             * validation
+             */
+            if(request.CommentContent.Length < 1)
+            {
+                throw new BusinessException("Comment Content is empty, reply fail");
+            }
+            var post = await _postRepo.GetPostById(request.PostId);
+            if(post ==null || post.DeletedStatus)
+            {
+                throw new BusinessException("Post does not exist, reply fail");
+            }
+            if(request.ParentId==0 && request.RootId != 0)
+            {
+                throw new BusinessException("Parent Id cannot be 0 if root id is not 0");
+            }
+            Comment? parentCommentRecord = null;
+            if (request.ParentId != 0)
+            {
+                parentCommentRecord = await _commentCache.Get(request.ParentId);
+                if (parentCommentRecord == null || parentCommentRecord.RootId != request.RootId)
+                {
+                    throw new BusinessException("Parent Comment's root id does not align with request body root id/" +
+                        "Parent Comment not exist");
+
+                }   
+            }
+            var parentId = request.ParentId;
+            long rootId = 0;
+            if (request.RootId == 0 && request.ParentId != 0)
+            {
+                rootId = request.ParentId;
+            }
+            else if (request.RootId != 0 && request.ParentId!=0)
+            {
+                rootId = request.RootId;
+            }
+            var saveComment = new Comment()
+            {
+                ParentId = parentId,
+                RootId = rootId,
+                CommentContent = request.CommentContent,
+                PostId = request.PostId,
+                UserId = uid,
+
+            };  
+            var comment = await _commentRepo.CreateCommentAsync(saveComment);
+            return new ReplyPostCommentResp()
+            {
+                CommentId = comment.Id,
+            };
+
+
         }
     }
 }

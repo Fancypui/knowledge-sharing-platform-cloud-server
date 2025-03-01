@@ -71,5 +71,23 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             return memberCount; 
 
         }
+
+        public async Task<List<(long Id, int TotalMember)>> GetTop500Channels()
+        {
+            var result = await _channelContext.Channel
+                .OrderByDescending(c => c.TotalMember)
+                .Select(c => new { c.Id, c.TotalMember })
+                .Take(500)
+                .ToListAsync();
+            return result?.Select(c => (c.Id, c.TotalMember)).ToList() ?? new List<(long, int)>();
+        }
+        public async Task<int> GetChannelCountUpTo500()
+        {
+            return await _channelContext.Channel
+                .Take(500) 
+                .CountAsync(); 
+        }
+
+
     }
 }

@@ -45,7 +45,12 @@ namespace knowledge_sharing_platform_cloud.Cache
         public async Task<RETURN> Get(KEY key)
         {
             var result = await GetBatch(new List<KEY> { key });
-            return result[key];
+            if (result.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            return default;
         }
 
         public async Task<Dictionary<KEY, RETURN>> GetBatch(List<KEY> keys)

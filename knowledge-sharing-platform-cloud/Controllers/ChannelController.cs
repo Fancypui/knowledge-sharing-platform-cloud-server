@@ -58,5 +58,12 @@ namespace knowledge_sharing_platform_cloud.Controllers
 
             return ApiResult<IEnumerable<string>>.ServiceSucess(channelList);
         }
+        [HttpGet("leaderboard/page")]
+        public async Task<ApiResult<CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>>> ChannelLeaderboardPage([FromQuery] CursorBaseReq request)
+        {
+            CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>> channelList = await _channelService.ChannelLeaderboardList(request);
+
+            return ApiResult<CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>>.ServiceSucess(channelList);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using knowledge_sharing_platform_cloud.Data.Constant;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace knowledge_sharing_platform_cloud.Data.Models.Channel
@@ -12,7 +13,7 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Channel
         public ChannelContext(IConfiguration config)
         {
             _config = config;
-            connectionString = _config.GetConnectionString("sqlServer");
+            connectionString = _config.GetConnectionString(ConfigurationConstant.DB_CONNECTION_STRING);
         }
 
         public DbSet<Channel> Channel { get; set; }

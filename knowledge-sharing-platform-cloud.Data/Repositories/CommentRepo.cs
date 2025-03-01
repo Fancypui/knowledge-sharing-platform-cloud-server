@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using knowledge_sharing_platform_cloud.Data.Models;
+using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using Microsoft.EntityFrameworkCore;
 
@@ -49,6 +50,13 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .Where(c => ids.Contains(c.Id))
                 .ToListAsync();
         }
-      
+        public async Task<Comment> CreateCommentAsync(Comment comment)
+        {
+            _commentContext.Comment.Add(comment);
+            await _commentContext.SaveChangesAsync();
+
+            return comment;
+        }
+
     }
 }

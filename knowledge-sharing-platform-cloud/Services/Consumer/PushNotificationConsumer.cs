@@ -4,7 +4,7 @@ using knowledge_sharing_platform_cloud.Models.DTO;
 
 namespace knowledge_sharing_platform_cloud.Services.Consumer
 {
-    public class PushNotificationConsumer : IMessageHandler<ChannelLeaderboardDTO>
+    public class PushNotificationConsumer : IMessageHandler<PushNotificationDTO>
     {
         private readonly IWebsocketService _websocketService;
         private readonly ILogger<PushNotificationConsumer> _logger;
@@ -15,7 +15,7 @@ namespace knowledge_sharing_platform_cloud.Services.Consumer
             _websocketService = websocketService;
             _logger = logger;
         }
-        public Task<MessageProcessStatus> HandleAsync(MessageEnvelope<ChannelLeaderboardDTO> messageEnvelope, CancellationToken token = default)
+        public Task<MessageProcessStatus> HandleAsync(MessageEnvelope<PushNotificationDTO> messageEnvelope, CancellationToken token = default)
         {
             /**
              * message envelope validation
@@ -30,7 +30,7 @@ namespace knowledge_sharing_platform_cloud.Services.Consumer
                 _logger.LogInformation("Message Envolope's Message Null");
                 return Task.FromResult(MessageProcessStatus.Failed());
             }
-            ChannelLeaderboardDTO pushNotificationDTO = messageEnvelope.Message;
+            PushNotificationDTO pushNotificationDTO = messageEnvelope.Message;
             PushNotificationType pushTypeEnum = pushNotificationDTO.Type;
             switch (pushTypeEnum)
             {
