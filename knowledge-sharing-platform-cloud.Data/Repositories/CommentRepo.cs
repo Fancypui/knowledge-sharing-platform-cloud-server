@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using knowledge_sharing_platform_cloud.Data.Models;
-using knowledge_sharing_platform_cloud.Data.Models.Comment;
+﻿using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories

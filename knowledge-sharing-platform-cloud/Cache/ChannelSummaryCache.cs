@@ -21,8 +21,8 @@ namespace knowledge_sharing_platform_cloud.Cache
 
         public override async Task<Dictionary<long, ChannelSummaryDTO>> Load(List<long> keys)
         {
-            var comments = await _channelRepo.GetChannelByIds(keys);
-            return comments.ToDictionary(c => c.Id, c => new ChannelSummaryDTO
+            var channels = await _channelRepo.GetChannelByIds(keys);
+            return channels.ToDictionary(c => c.Id, c => new ChannelSummaryDTO
             {
                 Topic = c.Topic,
                 Description = c.Description,

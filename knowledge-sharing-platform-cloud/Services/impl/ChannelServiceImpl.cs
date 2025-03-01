@@ -5,8 +5,8 @@ using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.DTO;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.ChannelReq;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.ChannelResp;
 using Stripe;
 
 namespace knowledge_sharing_platform_cloud.Services.impl
@@ -17,32 +17,19 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly UserRepo _userRepo;
         private readonly ChannelMemberRepo _channelMemberRepo;
 
-        private readonly ChannelSummaryCache _channelSummaryCache;
-        private readonly UserCache _userCache;
-
         private readonly IStripeService _stripeService;
-        private readonly IConfiguration _configuration;
 
         public ChannelServiceImpl(
             ChannelRepo channelRepo,
             UserRepo userRepo,
             ChannelMemberRepo channelMemberRepo,
-            ChannelSummaryCache channelSummaryCache,
-            UserCache userCache,
-            IStripeService stripeService,
-            IConfiguration configuration)
+            IStripeService stripeService)
         {
             _channelRepo = channelRepo;
             _userRepo = userRepo;
             _channelMemberRepo = channelMemberRepo;
 
-            _channelSummaryCache = channelSummaryCache;
-            _userCache = userCache;
-
             _stripeService = stripeService;
-            _configuration = configuration;
-
-            StripeConfiguration.ApiKey = _configuration["StripeApiSecretKey"];
         }
 
         public async Task<CreateChannelResp> CreateChannel(CreateChannelReq createChannelReq)
@@ -172,7 +159,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             TimeSpan channelOperationDuration = DateTime.Now - channel.CreatedTime;
 
-            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(getChannelSummaryReq.UserId, getChannelSummaryReq.ChannelId)
+            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(getChannelSummaryReq.UserId, getChannelSummaryReq.ChannelId);
 
             GetChannelSummaryResp response = new()
             {
@@ -218,9 +205,20 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<IEnumerable<string>> SearchChannelByTopic(string channelTopic)
+        public async Task<IEnumerable<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq)
         {
-            return await _channelRepo.GetChannelByName(channelTopic);
+            IEnumerable<Channel> channelList = await _channelRepo.GetChannelByName(searchChannelByTopicReq.Topic);
+
+            IEnumerable<SearchChannelByTopicResp> response = channelList.Select(channel =>
+            {
+                return new SearchChannelByTopicResp()
+                {
+                    ChannelId = channel.Id,
+                    ChannelTopic = channel.Topic,
+                };
+            });
+
+            return response;
         }
     }
 }

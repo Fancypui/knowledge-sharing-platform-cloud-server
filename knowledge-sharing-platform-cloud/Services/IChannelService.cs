@@ -1,6 +1,6 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models.Channel;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.ChannelReq;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.ChannelResp;
 
 namespace knowledge_sharing_platform_cloud.Services
 {
@@ -16,6 +16,6 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<GetChannelOwnerSummaryResp> GetChannelOwnerSummary(GetChannelOwnerSummaryReq getChannelOwnerSummaryReq);
 
-        Task<IEnumerable<string>> SearchChannelByTopic(string channelTopic)
+        Task<IEnumerable<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq);
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req
+namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req.CommentReq
 {
-    public class CommentListReq: CursorBaseReq
+    public class CommentListReq : CursorBaseReq
     {
         [Required(ErrorMessage = "Post Id is required")]
         public long PostId { get; set; }

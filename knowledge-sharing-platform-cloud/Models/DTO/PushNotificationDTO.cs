@@ -4,7 +4,7 @@ using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 
 namespace knowledge_sharing_platform_cloud.Models.DTO
 {
-    public class ChannelLeaderboardDTO
+    public class PushNotificationDTO
     {
         /**
          * serialize the WSBaseResp to string json 

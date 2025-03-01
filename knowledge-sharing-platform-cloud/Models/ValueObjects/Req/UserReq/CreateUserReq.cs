@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req
+namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req.UserReq
 {
     public class CreateUserReq
     {

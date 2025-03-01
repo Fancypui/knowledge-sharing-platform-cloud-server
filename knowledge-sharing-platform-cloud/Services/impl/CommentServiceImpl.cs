@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using knowledge_sharing_platform_cloud.Cache;
 using knowledge_sharing_platform_cloud.Data.Repositories;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.CommentReq;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.CommentResp;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace knowledge_sharing_platform_cloud.Services.impl

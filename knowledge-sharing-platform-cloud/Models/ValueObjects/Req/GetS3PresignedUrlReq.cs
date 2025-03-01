@@ -1,7 +1,7 @@
 ﻿namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req
 {
-    public class UserJoinedChannelListReq
+    public class GetS3PresignedUrlReq
     {
-        public long UserId { get; set; }
+        public string objectKey {  get; set; }
     }
 }

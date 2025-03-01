@@ -1,12 +1,18 @@
 ﻿using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Exception;
-using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using Stripe;
 
 namespace knowledge_sharing_platform_cloud.Services.impl
 {
     public class StripeServiceImpl : IStripeService
     {
+        IConfiguration _configuration;
+        public StripeServiceImpl(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            StripeConfiguration.ApiKey = _configuration["StripeApiSecretKey"];
+        }
+
         public Account CreateStripeAccount(User user)
         {
             var accountOptions = new AccountCreateOptions
