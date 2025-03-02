@@ -3,5 +3,6 @@
     public class CreateUserResp
     {
         public long UserId { get; set; }
+        public string Token { get; set; }
     }
 }

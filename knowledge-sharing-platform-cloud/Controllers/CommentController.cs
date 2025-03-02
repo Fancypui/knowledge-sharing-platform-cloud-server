@@ -8,14 +8,16 @@ using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.CommentReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.CommentResp;
 using knowledge_sharing_platform_cloud.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace knowledge_sharing_platform_cloud.Controllers
 {
-    [Route("[controller]")]
+    [Route("comment")]
     [ApiController]
+    [Authorize]
     public class CommentController : Controller
     {
         private readonly ILogger<CommentController> _logger;
@@ -35,7 +37,8 @@ namespace knowledge_sharing_platform_cloud.Controllers
         [HttpPost]
         public async Task<ApiResult<ReplyPostCommentResp>> ReplyPostComment([FromBody] ReplyPostCommentReq request)
         {
-            var resp = await _commentSerivce.ReplyPostComment(request, 1);
+            
+            var resp = await _commentSerivce.ReplyPostComment(request, long.Parse(HttpContext.Items["UserId"]?.ToString()));
             return ApiResult<ReplyPostCommentResp>.ServiceSucess(resp);
         }
     }

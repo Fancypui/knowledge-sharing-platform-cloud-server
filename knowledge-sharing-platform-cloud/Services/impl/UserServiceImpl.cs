@@ -6,6 +6,7 @@ using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.DTO;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.UserReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.UserResp;
+using knowledge_sharing_platform_cloud.Utils;
 using Stripe;
 
 namespace knowledge_sharing_platform_cloud.Services.impl
@@ -51,10 +52,11 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             {
                 throw new BusinessException("Failed to create user.");
             }
-
+            string jwtToken = JWTHelper.IssueToken(newUser.Id);
             CreateUserResp response = new()
             {
-                UserId = newUser.Id
+                UserId = newUser.Id,
+                Token = jwtToken,
             };
 
             return response;

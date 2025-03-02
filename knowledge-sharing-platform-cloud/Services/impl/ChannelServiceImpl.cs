@@ -31,6 +31,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             ChannelSummaryCache channelSummaryCache,
             UserCache userCache,
             ChannelLeaderboardCache leaderboardCache,
+            IStripeService stripeService,
             IConfiguration configuration)
         {
             _channelRepo = channelRepo;
