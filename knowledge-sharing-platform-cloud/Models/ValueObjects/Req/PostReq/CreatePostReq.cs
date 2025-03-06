@@ -4,7 +4,6 @@ namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req.PostReq
 {
     public class CreatePostReq
     {
-        public long UserId { get; set; }
 
         public long CategoryId { get; set; }
 
@@ -12,6 +11,11 @@ namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req.PostReq
 
         public string PostBody { get; set; }
 
-        public List<PostImageUrlDTO> PostImageUrl { get; set; }
+        public List<PostImageUrl>? PostImageUrls { get; set; }
+
+        public class PostImageUrl
+        {
+            public string ImageUrl { get; set; }
+        }
     }
 }

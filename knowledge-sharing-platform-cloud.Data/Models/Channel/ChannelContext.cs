@@ -1,4 +1,5 @@
-﻿using knowledge_sharing_platform_cloud.Data.Constant;
+﻿using System.Data.Common;
+using knowledge_sharing_platform_cloud.Data.Constant;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -7,13 +8,11 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Channel
     public class ChannelContext : DbContext
     {
 
-        private readonly IConfiguration _config;
-        private readonly string connectionString;
+        private readonly DbConnection _connection;
 
-        public ChannelContext(IConfiguration config)
+        public ChannelContext(DbConnection connection)
         {
-            _config = config;
-            connectionString = _config.GetConnectionString(ConfigurationConstant.DB_CONNECTION_STRING);
+            _connection = connection;
         }
 
         public DbSet<Channel> Channel { get; set; }
@@ -25,8 +24,16 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Channel
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer(connectionString);
+            if (_connection != null)
+            {
+                // Use the shared connection
+                optionsBuilder.UseSqlServer(_connection);
+            }
+            else
+            {
+                // Fallback to creating a new connection (for backward compatibility)
+                base.OnConfiguring(optionsBuilder);
+            }
         }
     }
 }

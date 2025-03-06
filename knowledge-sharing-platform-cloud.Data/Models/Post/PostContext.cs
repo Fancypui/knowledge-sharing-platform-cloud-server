@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,13 +12,12 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Post
 {
     public class PostContext : DbContext
     {
-        private readonly IConfiguration _config;
-        private readonly string connectionString;
 
-        public PostContext(IConfiguration config)
+        private readonly DbConnection _connection;
+
+        public PostContext(DbConnection connection)
         {
-            _config = config;
-            connectionString = config.GetConnectionString(ConfigurationConstant.DB_CONNECTION_STRING);
+            _connection = connection;
         }
         public DbSet<Post> Post { get; set; }
 
@@ -28,8 +28,16 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Post
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer(connectionString);
+            if (_connection != null)
+            {
+                // Use the shared connection
+                optionsBuilder.UseSqlServer(_connection);
+            }
+            else
+            {
+                // Fallback to creating a new connection (for backward compatibility)
+                base.OnConfiguring(optionsBuilder);
+            }
         }
     }
 }

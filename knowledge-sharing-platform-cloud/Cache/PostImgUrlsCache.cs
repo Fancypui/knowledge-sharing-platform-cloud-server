@@ -3,6 +3,7 @@ using knowledge_sharing_platform_cloud.Data.Models.Post;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Models.DTO;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.PostReq;
 using knowledge_sharing_platform_cloud.Services.impl;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Newtonsoft.Json;
@@ -30,24 +31,20 @@ namespace knowledge_sharing_platform_cloud.Cache
 
             var result = await Task.WhenAll(postWithImgUrl.Select(async post =>
             {
-                string[] postImageUrlList = JsonConvert.DeserializeObject<string[]>(post.PostImgUrl);
-
-                string[] s3PresignedUrlList = await Task.WhenAll(postImageUrlList.Select(async imageUrl =>
+                CreatePostReq.PostImageUrl[] postImageUrlList = JsonConvert.DeserializeObject<CreatePostReq.PostImageUrl[]>(post.PostImgUrl);
+                var request = postImageUrlList.Select(url =>
                 {
-                    GetS3PresignedUrlReq request = new()
+                    return new GetS3PresignedUrlReq()
                     {
-                        objectKey = imageUrl
+                        ObjectKey = url.ImageUrl,
                     };
-
-                    var s3Response = await _s3Service.GeneratePresignedUrlToRetrieve(request);
-
-                    return s3Response.S3PresignedUrl;
-                }));
+                });
+                var s3Response = await _s3Service.GeneratePresignedUrlToRetrieve(request);
 
                 PostImageUrlDTO postImageUrlDTO = new()
                 {
                     PostId = post.Id,
-                    ImageUrl = s3PresignedUrlList,
+                    ImageUrl = s3Response.S3PresignedUrls,
                 };
 
                 return postImageUrlDTO;

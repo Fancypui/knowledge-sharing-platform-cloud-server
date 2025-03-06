@@ -1,5 +1,8 @@
 ﻿using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using knowledge_sharing_platform_cloud.Exception;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -40,6 +43,20 @@ namespace knowledge_sharing_platform_cloud.Config
                             context.HttpContext.Items["UserId"] = userIdClaim.Value;
                         }
                         return Task.CompletedTask;
+                    },
+                    OnChallenge = async context =>
+                    {
+                        // Skip the default 401 response so we can return our own
+                        context.HandleResponse();
+                        // Set response status and content type
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+
+                        // Custom response body
+                        var response = ApiResult<string>.ServiceFail((int)CommonErrorEnum.UNAUTHORIZED, "Unauthorized access. Token is invalid or missing.");
+                        var jsonResponse = JsonSerializer.Serialize(response);
+
+                        await context.Response.WriteAsync(jsonResponse);
                     }
                 };
             });

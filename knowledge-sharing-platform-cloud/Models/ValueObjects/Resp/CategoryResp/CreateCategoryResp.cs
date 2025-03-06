@@ -3,5 +3,7 @@
     public class CreateCategoryResp
     {
         public long CategoryId { get; set; }
+        public string CategoryName { get; set; }
+        public bool MemberPrivilege { get; set; }
     }
 }

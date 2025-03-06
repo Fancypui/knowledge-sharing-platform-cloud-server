@@ -5,5 +5,6 @@
         BUSINESS_ERROR = 0,
         PARAM_VALID=1,
         SYSTEM_ERROR=2,
+        UNAUTHORIZED=3,
     }
 }

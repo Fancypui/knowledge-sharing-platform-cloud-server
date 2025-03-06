@@ -1,4 +1,5 @@
-﻿using knowledge_sharing_platform_cloud.Data.Models.Category;
+﻿using knowledge_sharing_platform_cloud.Cache;
+using knowledge_sharing_platform_cloud.Data.Models.Category;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.CategoryReq;
@@ -9,18 +10,32 @@ namespace knowledge_sharing_platform_cloud.Services.impl
     public class CategoryServiceImpl : ICategoryService
     {
         private readonly CategoryRepo _categoryRepo;
+        private readonly ChannelSummaryCache _channelSummaryCache;
+        
 
-        public CategoryServiceImpl(CategoryRepo categoryRepo)
+        public CategoryServiceImpl(CategoryRepo categoryRepo, ChannelSummaryCache channelSummaryCache)
         {
+            _channelSummaryCache = channelSummaryCache;
             _categoryRepo = categoryRepo;
         }
 
-        public async Task<CreateCategoryResp> CreateCategory(CreateCategoryReq createCategoryReq)
+        public async Task<CreateCategoryResp> CreateCategory(CreateCategoryReq createCategoryReq,long uid)
         {
+
+            var channelInfo = await _channelSummaryCache.Get(createCategoryReq.ChannelId);
+            if (channelInfo == null || channelInfo.ChannelOwnerId != uid)
+            {
+                throw new BusinessException("User does not have permission to modify privilege/Channel does not exist");
+            }
+            if (string.IsNullOrEmpty(createCategoryReq.CategoryName) || createCategoryReq.CategoryName.Length < 3)
+            {
+                throw new BusinessException("Category Name cannot be less than 3 letters");
+            }
+
             Category category = new()
             {
                 CategoryName = createCategoryReq.CategoryName,
-                MemberPrivilege = createCategoryReq.MemberPrivilege,
+                MemberPrivilege = true,
                 ChannelId = createCategoryReq.ChannelId,
             };
 
@@ -34,14 +49,29 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             CreateCategoryResp response = new()
             {
                 CategoryId = newCategory.Id,
+                CategoryName= newCategory.CategoryName,
+                MemberPrivilege = newCategory.MemberPrivilege
             };
 
 
             return response;
         }
 
-        public async Task<ModifyCategoryMemberPrivilegeResp> ModifyCategoryMemberPrivilege(ModifyCategoryMemberPrivilegeReq modifyCategoryMemberPrivilegeReq)
+        public async Task<ModifyCategoryMemberPrivilegeResp> ModifyCategoryMemberPrivilege(ModifyCategoryMemberPrivilegeReq modifyCategoryMemberPrivilegeReq, long uid)
         {
+            
+
+            var cateogry = await _categoryRepo.GetByIdAsync(modifyCategoryMemberPrivilegeReq.CategoryId);
+            if (cateogry == null)
+            {
+                throw new BusinessException("Category not found");
+            }
+            var channelInfo = await _channelSummaryCache.Get(cateogry.ChannelId);
+            if (channelInfo == null || channelInfo.ChannelOwnerId != uid)
+            {
+                throw new BusinessException("User does not have permission to modify privilege");
+            }
+            
             bool updatedCategory = await _categoryRepo.UpdateCategoryMemberPrivilege(modifyCategoryMemberPrivilegeReq.CategoryId, modifyCategoryMemberPrivilegeReq.MemberPrivilege);
 
             if (!updatedCategory)

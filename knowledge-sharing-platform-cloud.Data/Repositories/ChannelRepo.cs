@@ -3,6 +3,7 @@ using knowledge_sharing_platform_cloud.Data.Models.Channel;
 using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.VisualBasic;
 using System.ComponentModel;
 using System.Data;
@@ -90,8 +91,12 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         }
 
 
-        public async Task<bool> IncreaseTotalPostByOne(long channelId)
+        public async Task<bool> IncreaseTotalPostByOne(long channelId, IDbContextTransaction transaction = null)
         {
+            if (transaction != null)
+            {
+                _channelContext.Database.UseTransaction(transaction.GetDbTransaction());
+            }
             return await _channelContext.Channel
                 .Where(c => c.Id == channelId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalPost, c => c.TotalPost + 1)) > 0;

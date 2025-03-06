@@ -10,7 +10,7 @@
 
         public string PostContent { get; set; }
 
-        public string[] ImgUrls;
+        public string[] ImgUrls { get; set; }
 
         public Boolean LikeByCurrentUser { get; set; }
         public long PostID { get; set; }

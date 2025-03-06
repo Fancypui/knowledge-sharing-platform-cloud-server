@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using knowledge_sharing_platform_cloud.Data.Models.Post;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
 {
@@ -61,6 +62,10 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             return await _postContext.Post
                 .Where(p => ids.Contains(p.Id) && !p.DeletedStatus)
                 .ToListAsync();
+        }
+        public async Task<IDbContextTransaction> GetTransactionAsync()
+        {
+            return await _postContext.Database.BeginTransactionAsync();
         }
     }
 }

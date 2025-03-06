@@ -27,6 +27,11 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .Where(c => c.Id == categoryId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.MemberPrivilege, c => newMemberPrivilege)) > 0;
         }
+        public async Task<Category?> GetByIdAsync(long categoryId)
+        {
+            return await _categoryContext.Category.FirstOrDefaultAsync(c => c.Id == categoryId);
+        }
+
 
         public async Task<IEnumerable<Category>> GetCategoriesByChannelId(long channelId)
         {

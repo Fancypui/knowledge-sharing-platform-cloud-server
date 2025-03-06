@@ -5,9 +5,9 @@ namespace knowledge_sharing_platform_cloud.Services
 {
     public interface ICategoryService
     {
-        Task<CreateCategoryResp> CreateCategory(CreateCategoryReq createCategoryReq);
+        Task<CreateCategoryResp> CreateCategory(CreateCategoryReq createCategoryReq, long uid);
 
-        Task<ModifyCategoryMemberPrivilegeResp> ModifyCategoryMemberPrivilege(ModifyCategoryMemberPrivilegeReq modifyCategoryMemberPrivilegeReq);
+        Task<ModifyCategoryMemberPrivilegeResp> ModifyCategoryMemberPrivilege(ModifyCategoryMemberPrivilegeReq modifyCategoryMemberPrivilegeReq, long uid);
 
         Task<IEnumerable<CategoryListResp>> CategoryList(CategoryListReq categoryListReq);
     }

@@ -2,6 +2,7 @@
 {
     public class GetS3PresignedUrlReq
     {
-        public string objectKey {  get; set; }
+        public string? FileType { get; set; }
+        public string ObjectKey {  get; set; }
     }
 }

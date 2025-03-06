@@ -10,7 +10,6 @@ namespace knowledge_sharing_platform_cloud.Controllers
 {
     [Route("post")]
     [ApiController]
-    [Authorize]
     public class PostController : Controller
     {
         private readonly IPostService _postService;
@@ -21,18 +20,18 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpPost]
-        public async Task<ApiResult<CreatePostResp>> CreatePost(CreatePostReq createPostReq)
+        public async Task<ApiResult<CreatePostResp>> CreatePost([FromBody] CreatePostReq createPostReq)
         {
-            CreatePostResp createPostResp = await _postService.CreatePost(createPostReq);
+            CreatePostResp createPostResp = await _postService.CreatePost(createPostReq,11000);
 
             return ApiResult<CreatePostResp>.ServiceSucess(createPostResp);
         }
         [HttpGet("page")]
-        public async Task<ApiResult<CursorBasedResp<IEnumerable<PostPageResp>>>> GetPostPage([FromQuery] PostPageReq request)
+        public async Task<ApiResult<CursorBasedResp<PostPageResp>>> GetPostPage([FromQuery] PostPageReq request)
         {
             
-            var listData = await _postService.PostPage(request, long.Parse(HttpContext.Items["UserId"]?.ToString()));
-            return ApiResult<CursorBasedResp<IEnumerable<PostPageResp>>>.ServiceSucess(listData);
+            var listData = await _postService.PostPage(request, 11000);
+            return ApiResult<CursorBasedResp<PostPageResp>>.ServiceSucess(listData);
         }
     }
 }

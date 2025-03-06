@@ -3,10 +3,22 @@ using knowledge_sharing_platform_cloud.Config;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
-//builder.Services.ConfigureAwsServices(builder.Configuration);
+builder.Services.ConfigureAwsServices(builder.Configuration);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin() // Allow requests from localhost:3000
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
+
 
 var app = builder.Build();
 app.UseExceptionHandler(options => { });
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -16,7 +28,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowSpecificOrigins");
 app.UseAuthorization();
 /**
  * ping frame to client every two minutes

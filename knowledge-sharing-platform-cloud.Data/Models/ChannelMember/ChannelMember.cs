@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace knowledge_sharing_platform_cloud.Data.Models.ChannelMember
 {
+    [Table("Channel_Member")]
     public class ChannelMember
     {
         [Key] // Marks it as a primary key

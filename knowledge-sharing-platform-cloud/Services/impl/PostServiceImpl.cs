@@ -6,11 +6,14 @@ using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.DTO;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.CategoryReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.PostReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.PostResp;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using System.Collections.Generic;
 using System.Text.Json;
+using static knowledge_sharing_platform_cloud.Models.ValueObjects.Req.PostReq.CreatePostReq;
 
 namespace knowledge_sharing_platform_cloud.Services.impl
 {
@@ -22,40 +25,52 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly UserCache _userCache;
         private readonly LikesRepo _likesRepo;
         private readonly PostImgUrlsCache _postImgUrlsCache;
+        private readonly ChannelMemberRepo _channelMemberRepo;
+        
 
         public PostServiceImpl(PostRepo postRepo, CategoryRepo categoryRepo, 
-            ChannelRepo channelRepo,UserCache userCache, LikesRepo likesRepo, PostImgUrlsCache postImgUrlsCache)
+            ChannelRepo channelRepo,UserCache userCache, LikesRepo likesRepo,
+            PostImgUrlsCache postImgUrlsCache,
+            ChannelMemberRepo channelMemberRepo)
         {
             _postRepo = postRepo;
             _categoryRepo = categoryRepo;
             _channelRepo = channelRepo; 
             _userCache = userCache;
             _likesRepo = likesRepo;
-            _postImgUrlsCache = postImgUrlsCache;   
+            _postImgUrlsCache = postImgUrlsCache;  
+            _channelMemberRepo = channelMemberRepo;
         }
 
-        public async Task<CreatePostResp> CreatePost(CreatePostReq createPostReq)
+        public async Task<CreatePostResp> CreatePost(CreatePostReq createPostReq, long uid)
         {
+            
             Category postCategory = await _categoryRepo.GetCategoryById(createPostReq.CategoryId);
 
             if (postCategory == null)
             {
                 throw new BusinessException("Failed to create post. Category does not exist in db.");
             }
+            var isChannelMember = await _channelMemberRepo.CheckUserJoinChannel(uid, postCategory.ChannelId);
+            if (!isChannelMember)
+            {
+                throw new BusinessException("User has no permission to create post.");
+            }
+
 
             if (postCategory.MemberPrivilege == false)
             {
                 throw new BusinessException("Failed to create post. Member does not have privilege to create post for this category.");
             }
 
-            List<PostImageUrlDTO> postImageList = createPostReq.PostImageUrl;
+            List<PostImageUrl> postImageList = createPostReq.PostImageUrls;
 
             Post post = new()
             {
                 Title = createPostReq.PostTitle,
                 Body = createPostReq.PostBody,
                 CategoryId = createPostReq.CategoryId,
-                UserId = createPostReq.UserId,
+                UserId = uid,
                 PostImgUrl = postImageList != null ? JsonSerializer.Serialize(postImageList, new JsonSerializerOptions { WriteIndented = true }) : JsonSerializer.Serialize(new List<string>(), new JsonSerializerOptions { WriteIndented = true })
             };
 
@@ -66,33 +81,54 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             {
                 throw new BusinessException("Fail to create post. Channel does not exist.");
             }
-
-            Post newPost = await _postRepo.CreatePostAsync(post);
-
-            if (newPost == null)
+            await using var transaction = await _postRepo.GetTransactionAsync();
+            try
             {
-                throw new BusinessException("Failed to create a new post.");
+                Post newPost = await _postRepo.CreatePostAsync(post);
+
+                if (newPost == null)
+                {
+                    throw new BusinessException("Failed to create a new post.");
+                }
+             
+                await _channelRepo.IncreaseTotalPostByOne(postChannel.Id,transaction);
+
+                await transaction.CommitAsync();
+                CreatePostResp response = new()
+                {
+                    PostId = newPost.Id,
+                };
+                
+                return response;
+            }
+            catch (System.Exception e)
+            {
+                await transaction.RollbackAsync();//rollback transaction
+                throw;
             }
 
-            await _channelRepo.IncreaseTotalPostByOne(postChannel.Id);
-
-            CreatePostResp response = new()
-            {
-                PostId = newPost.Id,
-            };
-
-            return response;
         }
 
-        public async Task<CursorBasedResp<IEnumerable<PostPageResp>>> PostPage(PostPageReq request, long uid)
+        public async Task<CursorBasedResp<PostPageResp>> PostPage(PostPageReq request, long uid)
         {
             /**
             * validation
             */
-            if(request.ChannelCateogryId == null)
+            if(request.ChannelCategoryId == null)
             {
                 throw new BusinessException("Channel Category Id are required to query the page");
             }
+            var cateogry = await _categoryRepo.GetByIdAsync(request.ChannelCategoryId);
+            if (cateogry == null)
+            {
+                throw new BusinessException("Category not found");
+            }
+            var isChannelMember = await  _channelMemberRepo.CheckUserJoinChannel(uid, cateogry.ChannelId);
+            if (!isChannelMember)
+            {
+                throw new BusinessException("User does not have permission to view post");
+            }
+
             /**
              * cursor conversion
              */
@@ -104,7 +140,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             /**
              * get post page from db
              */
-            var listData = await _postRepo.GetPostPage(cursor, request.PageSize, request.ChannelCateogryId);
+            var listData = await _postRepo.GetPostPage(cursor, request.PageSize, request.ChannelCategoryId);
             /**
              * get post user id
              */
@@ -145,7 +181,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 };
             }).ToList();
             long? cursorId = listData.Any() ? listData.Min(post => post.Id) : null;
-            return CursorBasedResp<IEnumerable< PostPageResp >>.Init(new List<IEnumerable<PostPageResp>> { listResp }, cursorId, listResp.Count()<request.PageSize);
+            return CursorBasedResp<PostPageResp>.Init(listResp, cursorId, listResp.Count()<request.PageSize);
 
         }
     }

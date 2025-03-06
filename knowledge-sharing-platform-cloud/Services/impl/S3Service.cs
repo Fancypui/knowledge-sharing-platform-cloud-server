@@ -27,9 +27,9 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToUpload(GetS3PresignedUrlReq getS3PresignedUrlReq)
+        public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToUpload(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
-            string bucketName = "ddac-assignment-s3-post";
+            string bucketName = "ddac-assignment-s3-post-1";
 
             var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
             if (!bucketExists)
@@ -37,29 +37,33 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 throw new BusinessException("Failed to generate S3 presigned url. Bucket does not exists");
             }
 
-            string objectKey = getS3PresignedUrlReq.objectKey;
-
-            GetPreSignedUrlRequest request = new()
+            string[] s3PresignedUploadUrls = await Task.WhenAll(getS3PresignedUrlReq.Select(async file =>
             {
-                BucketName = bucketName,
-                Key = objectKey,
-                Verb = HttpVerb.PUT,
-                Expires = DateTime.UtcNow.AddMinutes(5)
-            };
+                GetPreSignedUrlRequest request = new()
+                {
+                    BucketName = bucketName,
+                    Key = file.ObjectKey,
+                    Verb = HttpVerb.PUT,
+                    Expires = DateTime.UtcNow.AddMinutes(5),
+                    ContentType = file.FileType
+                };
 
-            string presignedUrl = await _s3Client.GetPreSignedURLAsync(request);
+                string presignedUrl = await _s3Client.GetPreSignedURLAsync(request);
+
+                return presignedUrl;
+            }));
 
             GetS3PresignedUrlResp response = new()
             {
-                S3PresignedUrl = presignedUrl,
+                S3PresignedUrls = s3PresignedUploadUrls,
             };
 
             return response;
         }
 
-        public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToRetrieve(GetS3PresignedUrlReq getS3PresignedUrlReq)
+        public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToRetrieve(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
-            string bucketName = "ddac-assignment-s3-post";
+            string bucketName = "ddac-assignment-s3-post-1";
 
             var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
             if (!bucketExists)
@@ -67,24 +71,30 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 throw new BusinessException("Failed to generate S3 presigned url. Bucket does not exists");
             }
 
-            string objectKey = getS3PresignedUrlReq.objectKey;
-
-            GetPreSignedUrlRequest request = new()
+            string[] s3PresignedRetrieveUrls = await Task.WhenAll(getS3PresignedUrlReq.Select(async file =>
             {
-                BucketName = bucketName,
-                Key = objectKey,
-                Verb = HttpVerb.GET,
-                Expires = DateTime.UtcNow.AddMinutes(135)
-            };
+                GetPreSignedUrlRequest request = new()
+                {
+                    BucketName = bucketName,
+                    Key = file.ObjectKey,
+                    Verb = HttpVerb.GET,
+                    Expires = DateTime.UtcNow.AddMinutes(135)
+                };
 
-            string presignedUrl = await _s3Client.GetPreSignedURLAsync(request);
+                string presignedUrl = await _s3Client.GetPreSignedURLAsync(request);
+
+                return presignedUrl;
+            }));
+
+
 
             GetS3PresignedUrlResp response = new()
             {
-                S3PresignedUrl = presignedUrl,
+                S3PresignedUrls = s3PresignedRetrieveUrls,
             };
 
             return response;
+
         }
     }
 }

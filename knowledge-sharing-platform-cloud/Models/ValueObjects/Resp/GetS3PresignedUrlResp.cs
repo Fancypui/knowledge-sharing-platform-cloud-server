@@ -2,6 +2,6 @@
 {
     public class GetS3PresignedUrlResp
     {
-        public string S3PresignedUrl {  get; set; }
+        public string[] S3PresignedUrls {  get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Req
     public class PostPageReq: CursorBaseReq
     {
         [Required(ErrorMessage = "Channel Category Id is required")]
-        public long ChannelCateogryId {  get; set; }
+        public long ChannelCategoryId {  get; set; }
        
     }
 }
