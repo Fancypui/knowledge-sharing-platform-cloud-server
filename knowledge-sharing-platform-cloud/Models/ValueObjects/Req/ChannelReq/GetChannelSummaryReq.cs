@@ -4,6 +4,6 @@
     {
         public long ChannelId { get; set; }
 
-        public long UserId { get; set; }
+  
     }
 }

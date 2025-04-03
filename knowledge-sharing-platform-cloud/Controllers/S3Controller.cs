@@ -44,10 +44,18 @@ namespace knowledge_sharing_platform_cloud.Controllers
         //    return Ok("file uploaded");
         //}
 
-        [HttpPost("url")]
-        public async Task<ApiResult<GetS3PresignedUrlResp>> GetS3PresignedUrl([FromBody] IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
+        //[HttpPost("url/upload")]
+        //public async Task<ApiResult<IEnumerable<GetS3PresignedUrlResp>>> GeneratePresignedUrlToUpload(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
+        //{
+        //    IEnumerable<GetS3PresignedUrlResp> getS3PresignedUrlResp = await _s3Service.GeneratePresignedUrlToUpload(getS3PresignedUrlReq);
+
+        //    return ApiResult<IEnumerable<GetS3PresignedUrlResp>>.ServiceSucess(getS3PresignedUrlResp);
+        //}
+
+        [HttpPost("url/retrieve")]
+        public async Task<ApiResult<GetS3PresignedUrlResp>> GeneratePresignedUrlToRetrieve(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
-            GetS3PresignedUrlResp getS3PresignedUrlResp = await _s3Service.GeneratePresignedUrlToUpload(getS3PresignedUrlReq);
+            GetS3PresignedUrlResp getS3PresignedUrlResp = await _s3Service.GeneratePresignedUrlToRetrieve(getS3PresignedUrlReq);
 
             return ApiResult<GetS3PresignedUrlResp>.ServiceSucess(getS3PresignedUrlResp);
         }

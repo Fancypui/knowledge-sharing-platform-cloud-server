@@ -32,7 +32,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             _userCache = userCache;
             _postRepo = postRepo;
         }
-        public async Task<IEnumerable<CommentListResp>> CommentList(CommentListReq request)
+        public async Task<CursorBasedResp<CommentListResp>> CommentList(CommentListReq request)
         {
             long? cursor = null;
             if (!request.IsFirstPage() && long.TryParse(request.Cursor, out var parsedCursor))
@@ -66,7 +66,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             /**
              * convert entity into response type 
              */
-            return commentList.Select(comment =>
+            var listData = commentList.Select(comment =>
                 {
                     var senderInfo = userMap.GetValueOrDefault(comment.UserId);
                     var parentComment = parentCommentMap.GetValueOrDefault(comment.ParentId,null);
@@ -85,6 +85,16 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                         ParentId = comment.ParentId
                     };
                 }).ToList();
+            long? cursorId = null;
+            if (request.RootId == 0)
+            {
+                cursorId = listData.Any() ? listData.Min(comment=>comment.CommentId) : null;
+            }
+            else
+            {
+                cursorId = listData.Any() ? listData.Max(comment => comment.CommentId) : null;
+            }
+            return CursorBasedResp<CommentListResp>.Init(listData, cursorId, listData.Count() < request.PageSize);
         }
 
         public async Task<ReplyPostCommentResp> ReplyPostComment(ReplyPostCommentReq request, long uid)
@@ -131,6 +141,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 ParentId = parentId,
                 RootId = rootId,
                 CommentContent = request.CommentContent,
+                CreatedTime = DateTime.UtcNow,
                 PostId = request.PostId,
                 UserId = uid,
 
@@ -139,10 +150,31 @@ namespace knowledge_sharing_platform_cloud.Services.impl
              * save db
              */
             var comment = await _commentRepo.CreateCommentAsync(saveComment);
-            return new ReplyPostCommentResp()
+            var parentComment = await _commentCache.Get(comment.ParentId);
+            var uidList = new List<long>();
+            uidList.Add(comment.UserId);
+            if (parentComment != null)
+            {
+                uidList.Add(parentComment.UserId);
+            }
+            
+            var userMap = await _userCache.GetBatch(uidList);
+            var senderInfo = userMap.GetValueOrDefault(comment.UserId,null);
+            var parentSenderInfo = parentComment != null ? userMap.GetValueOrDefault(parentComment.UserId) : null;
+            return new ReplyPostCommentResp
             {
                 CommentId = comment.Id,
+                Content = comment.CommentContent,
+                SenderUid = comment.UserId,
+                SenderName = senderInfo?.Username ?? null,
+                ReceiverUid = parentComment != null ? parentComment.UserId : 0,
+                ReceiverName = parentSenderInfo?.Username ?? null,
+                ReplyTime = comment.CreatedTime,
+                PostId = comment.PostId,
+                RootId = comment.RootId,
+                ParentId = comment.ParentId
             };
+
 
 
         }

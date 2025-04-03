@@ -29,7 +29,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             return like;
         }
 
-        public async Task<Likes> FindLikesByUserIdAndPostIdAsync(long userId,  long postId)
+        public async Task<Likes?> FindLikesByUserIdAndPostIdAsync(long userId,  long postId)
         {
             return await _likesContext.Likes
                 .FirstOrDefaultAsync(like => like.UserId == userId && like.PostId == postId);
@@ -53,10 +53,25 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
 
         public async Task<IEnumerable<Likes>> GetPaginatedLikes(long postId, long? cursor, int pageSize)
         {
-            var query = _likesContext.Likes
-            .Where(l => l.PostId == postId && l.LikeStatus);
+            if (cursor.HasValue && cursor > 0)
+            {
+                return await _likesContext.Likes
+                .Where(l => l.PostId == postId && l.LikeStatus)
+                .Where(p => p.Id < cursor)
+                .OrderByDescending(p => p.Id)
+                .Take(pageSize) // Fetch only pageSize likes
+                .ToListAsync();
 
-            return await query.Take(pageSize).ToListAsync();
+            }
+            else
+            {
+                return await _likesContext.Likes
+                .Where(l => l.PostId == postId && l.LikeStatus)
+                .OrderByDescending(p => p.Id)
+                .Take(pageSize) // Fetch only pageSize likes
+                .ToListAsync();
+            }
+    
 
         }
     }

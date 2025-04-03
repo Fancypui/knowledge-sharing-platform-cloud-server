@@ -17,7 +17,6 @@ namespace knowledge_sharing_platform_cloud.Controllers
 {
     [Route("comment")]
     [ApiController]
-    [Authorize]
     public class CommentController : Controller
     {
         private readonly ILogger<CommentController> _logger;
@@ -28,13 +27,15 @@ namespace knowledge_sharing_platform_cloud.Controllers
             _commentSerivce = commentSerivce;
             _logger = logger;
         }
-        [HttpGet]
-        public async Task<ApiResult<IEnumerable<CommentListResp>>> CommentList([FromQuery] CommentListReq request)
+        [HttpGet("page")]
+        [Authorize]
+        public async Task<ApiResult<CursorBasedResp<CommentListResp>>> CommentList([FromQuery] CommentListReq request)
         {
                 var resp = await _commentSerivce.CommentList(request);
-                return ApiResult<IEnumerable<CommentListResp>>.ServiceSucess(resp);    
+                return ApiResult<CursorBasedResp<CommentListResp>>.ServiceSucess(resp);    
         }
         [HttpPost]
+        [Authorize]
         public async Task<ApiResult<ReplyPostCommentResp>> ReplyPostComment([FromBody] ReplyPostCommentReq request)
         {
             

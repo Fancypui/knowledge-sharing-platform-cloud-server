@@ -26,5 +26,13 @@ namespace knowledge_sharing_platform_cloud.Data.Models.Likes
             base.OnConfiguring(optionsBuilder);
             optionsBuilder.UseSqlServer(connectionString);
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Likes>()
+                .HasIndex(l => new { l.UserId, l.PostId })  // Define unique constraint
+                .IsUnique();
+        }
     }
 }

@@ -4,6 +4,7 @@ using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.UserReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.UserResp;
 using knowledge_sharing_platform_cloud.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace knowledge_sharing_platform_cloud.Controllers
@@ -30,19 +31,44 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpGet("joinedChannels")]
+        [Authorize]
         public async Task<ApiResult<IEnumerable<UserJoinedChannelListResp>>> UserJoinedChannelList([FromQuery] UserJoinedChannelListReq userJoinedChannelListReq)
         {
-            IEnumerable<UserJoinedChannelListResp> userJoinedChannelListResp = await _userService.UserJoinedChannelList(userJoinedChannelListReq);
+            IEnumerable<UserJoinedChannelListResp> userJoinedChannelListResp = await _userService.UserJoinedChannelList(long.Parse(HttpContext.Items["UserId"]?.ToString()));
 
             return ApiResult<IEnumerable<UserJoinedChannelListResp>>.ServiceSucess(userJoinedChannelListResp);
         }
 
         [HttpGet("managedChannels")]
+        [Authorize]
         public async Task<ApiResult<IEnumerable<UserManagedChannelListResp>>> UserManagedChannelList([FromQuery] UserManagedChannelListReq userManagedChannelListReq)
         {
-            IEnumerable<UserManagedChannelListResp> userManagedChannelListResp = await _userService.UserManagedChannelList(userManagedChannelListReq);
+            IEnumerable<UserManagedChannelListResp> userManagedChannelListResp = await _userService.UserManagedChannelList(long.Parse(HttpContext.Items["UserId"]?.ToString()));
 
             return ApiResult<IEnumerable<UserManagedChannelListResp>>.ServiceSucess(userManagedChannelListResp);
+        }
+
+        [HttpPost("register")]
+        public async Task<ApiResult<UserRegisterResp>> UserRegistration([FromBody] UserRegisterReq request)
+        {
+            var resp = await _userService.userRegistration(request);
+
+            return ApiResult<UserRegisterResp>.ServiceSucess(resp);
+        }
+        [HttpPost("login")]
+        public async Task<ApiResult<UserLogInResp>> UserLogin([FromBody] UserLogInReq request)
+        {
+            var resp = await _userService.userLogIn(request);
+
+            return ApiResult<UserLogInResp>.ServiceSucess(resp);
+        }
+        [HttpGet("userInfo")]
+        [Authorize]
+        public async Task<ApiResult<UserInfoResp>> GetUserInfo()
+        {
+            var resp = await _userService.GetUserInfo(long.Parse(HttpContext.Items["UserId"]?.ToString()));
+
+            return ApiResult<UserInfoResp>.ServiceSucess(resp);
         }
     }
 }

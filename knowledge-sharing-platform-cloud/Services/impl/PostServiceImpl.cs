@@ -26,11 +26,13 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly LikesRepo _likesRepo;
         private readonly PostImgUrlsCache _postImgUrlsCache;
         private readonly ChannelMemberRepo _channelMemberRepo;
+        private readonly ChannelSummaryCache _channelSummaryCache;
         
 
         public PostServiceImpl(PostRepo postRepo, CategoryRepo categoryRepo, 
             ChannelRepo channelRepo,UserCache userCache, LikesRepo likesRepo,
             PostImgUrlsCache postImgUrlsCache,
+            ChannelSummaryCache channelSummaryCache,
             ChannelMemberRepo channelMemberRepo)
         {
             _postRepo = postRepo;
@@ -40,6 +42,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             _likesRepo = likesRepo;
             _postImgUrlsCache = postImgUrlsCache;  
             _channelMemberRepo = channelMemberRepo;
+            _channelSummaryCache = channelSummaryCache;
         }
 
         public async Task<CreatePostResp> CreatePost(CreatePostReq createPostReq, long uid)
@@ -52,16 +55,22 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 throw new BusinessException("Failed to create post. Category does not exist in db.");
             }
             var isChannelMember = await _channelMemberRepo.CheckUserJoinChannel(uid, postCategory.ChannelId);
-            if (!isChannelMember)
+            var channelSummary = await _channelSummaryCache.Get(postCategory.ChannelId);
+            var isChannelOwner = channelSummary!=null && channelSummary.ChannelOwnerId == uid;
+            if (!isChannelOwner)
             {
-                throw new BusinessException("User has no permission to create post.");
-            }
+                if (!isChannelMember)
+                {
+                    throw new BusinessException("User has no permission to create post.");
+                }
 
 
-            if (postCategory.MemberPrivilege == false)
-            {
-                throw new BusinessException("Failed to create post. Member does not have privilege to create post for this category.");
+                if (postCategory.MemberPrivilege == false)
+                {
+                    throw new BusinessException("Failed to create post. Member does not have privilege to create post for this category.");
+                }
             }
+            
 
             List<PostImageUrl> postImageList = createPostReq.PostImageUrls;
 
@@ -71,6 +80,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 Body = createPostReq.PostBody,
                 CategoryId = createPostReq.CategoryId,
                 UserId = uid,
+                CreatedTime = DateTime.UtcNow,
                 PostImgUrl = postImageList != null ? JsonSerializer.Serialize(postImageList, new JsonSerializerOptions { WriteIndented = true }) : JsonSerializer.Serialize(new List<string>(), new JsonSerializerOptions { WriteIndented = true })
             };
 
@@ -124,10 +134,12 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 throw new BusinessException("Category not found");
             }
             var isChannelMember = await  _channelMemberRepo.CheckUserJoinChannel(uid, cateogry.ChannelId);
-            if (!isChannelMember)
+            var channelSummary = await _channelSummaryCache.Get(cateogry.ChannelId);
+            if (!isChannelMember && (channelSummary==null||channelSummary.ChannelOwnerId!=uid))
             {
                 throw new BusinessException("User does not have permission to view post");
             }
+            
 
             /**
              * cursor conversion

@@ -6,10 +6,10 @@ builder.Services.ConfigureServices(builder.Configuration);
 builder.Services.ConfigureAwsServices(builder.Configuration);
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigins",
+    options.AddPolicy("CORSOpenPolicy",
         builder =>
         {
-            builder.AllowAnyOrigin() // Allow requests from localhost:3000
+            builder.WithOrigins("*") 
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });
@@ -28,7 +28,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowSpecificOrigins");
+app.UseCors("CORSOpenPolicy");
 app.UseAuthorization();
 /**
  * ping frame to client every two minutes

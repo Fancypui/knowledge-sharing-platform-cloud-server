@@ -160,7 +160,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return "nice";
         }
 
-        public async Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq)
+        public async Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq, long uid)
         {
             Channel channel = await _channelRepo.GetChannelbyIdAsync(getChannelSummaryReq.ChannelId);
 
@@ -171,7 +171,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             TimeSpan channelOperationDuration = DateTime.Now - channel.CreatedTime;
 
-            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(getChannelSummaryReq.UserId, getChannelSummaryReq.ChannelId);
+            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(uid, getChannelSummaryReq.ChannelId);
 
             GetChannelSummaryResp response = new()
             {
@@ -233,7 +233,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>> ChannelLeaderboardList(CursorBaseReq request)
+        public async Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(CursorBaseReq request)
         {
             long? cursor = null;
             if (!request.IsFirstPage() && long.TryParse(request.Cursor, out var parsedCursor))
@@ -247,7 +247,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             // If channelIds is empty, return an empty list immediately
             if (channelLeaderboardEntries == null || !channelLeaderboardEntries.Any())
             {
-                return CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>.empty();
+                return CursorBasedResp<ChannelLeaderboardListResp>.empty();
             }
             /**
              * convert the entries into list of channel id
@@ -268,7 +268,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
                 };
 
-            });
+            }).ToList();
             if (cursor == null)
             {
                 cursor = request.PageSize;
@@ -278,7 +278,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 cursor = cursor + listData.Count();
             }
             //long? nextCursor = listData.Any() ? listData.Max(x => x.ChannelId) : null;
-            return CursorBasedResp<IEnumerable<ChannelLeaderboardListResp>>.Init(new List<IEnumerable<ChannelLeaderboardListResp>> { listData }, cursor, listData.Count() < request.PageSize);
+            return CursorBasedResp<ChannelLeaderboardListResp>.Init(listData, cursor, listData.Count() < request.PageSize);
 
 
         }

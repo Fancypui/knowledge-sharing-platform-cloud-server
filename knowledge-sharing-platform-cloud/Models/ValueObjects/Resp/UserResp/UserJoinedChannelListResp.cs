@@ -8,7 +8,9 @@
 
         public string ChannelOwnerName { get; set; }
 
-        public string? ChannelImgBackground { get; set; }
+        public string? ChannelImgUrl { get; set; }
+
+        public string? ChannelBackgroundUrl { get; set; }
 
         public string? ChannelOwnerProfileUrl { get; set; }
 

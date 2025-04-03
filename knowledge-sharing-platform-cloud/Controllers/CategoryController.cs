@@ -21,25 +21,28 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ApiResult<CreateCategoryResp>> CreateCategory([FromBody] CreateCategoryReq createCategoryReq)
         {
-            CreateCategoryResp createCategoryResp = await _categoryService.CreateCategory(createCategoryReq,11000);
+            CreateCategoryResp createCategoryResp = await _categoryService.CreateCategory(createCategoryReq, long.Parse(HttpContext.Items["UserId"]?.ToString()));
 
             return ApiResult<CreateCategoryResp>.ServiceSucess(createCategoryResp);
         }
 
         [HttpPut("memberPrivilege")]
-  
+        [Authorize]
+
         public async Task<ApiResult<ModifyCategoryMemberPrivilegeResp>> ModifyCategoryMemberPrivilege([FromBody] ModifyCategoryMemberPrivilegeReq modifyCategoryMemberPrivilegeReq)
         {
             
 
-            ModifyCategoryMemberPrivilegeResp modifyCategoryMemberPrivilegeResp = await _categoryService.ModifyCategoryMemberPrivilege(modifyCategoryMemberPrivilegeReq,11000);
+            ModifyCategoryMemberPrivilegeResp modifyCategoryMemberPrivilegeResp = await _categoryService.ModifyCategoryMemberPrivilege(modifyCategoryMemberPrivilegeReq, long.Parse(HttpContext.Items["UserId"]?.ToString()));
 
             return ApiResult<ModifyCategoryMemberPrivilegeResp>.ServiceSucess(modifyCategoryMemberPrivilegeResp);
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ApiResult<IEnumerable<CategoryListResp>>> CategoryList([FromQuery] CategoryListReq categoryListReq)
         {
 

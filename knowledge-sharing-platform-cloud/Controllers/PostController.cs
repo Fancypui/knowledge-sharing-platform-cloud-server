@@ -20,17 +20,19 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ApiResult<CreatePostResp>> CreatePost([FromBody] CreatePostReq createPostReq)
         {
-            CreatePostResp createPostResp = await _postService.CreatePost(createPostReq,11000);
+            CreatePostResp createPostResp = await _postService.CreatePost(createPostReq, long.Parse(HttpContext.Items["UserId"]?.ToString()));
 
             return ApiResult<CreatePostResp>.ServiceSucess(createPostResp);
         }
         [HttpGet("page")]
+        [Authorize]
         public async Task<ApiResult<CursorBasedResp<PostPageResp>>> GetPostPage([FromQuery] PostPageReq request)
         {
             
-            var listData = await _postService.PostPage(request, 11000);
+            var listData = await _postService.PostPage(request, long.Parse(HttpContext.Items["UserId"]?.ToString()));
             return ApiResult<CursorBasedResp<PostPageResp>>.ServiceSucess(listData);
         }
     }

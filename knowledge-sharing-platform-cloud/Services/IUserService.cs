@@ -7,8 +7,15 @@ namespace knowledge_sharing_platform_cloud.Services
     {
         Task<CreateUserResp> CreateUser(CreateUserReq createUserReq);
 
-        Task<IEnumerable<UserJoinedChannelListResp>> UserJoinedChannelList(UserJoinedChannelListReq userJoinedChannelListReq);
+        Task<IEnumerable<UserJoinedChannelListResp>> UserJoinedChannelList(long uid);
 
-        Task<IEnumerable<UserManagedChannelListResp>> UserManagedChannelList(UserManagedChannelListReq userManageChannelListReq);
+        Task<IEnumerable<UserManagedChannelListResp>> UserManagedChannelList(long uid);
+
+        Task<UserRegisterResp> userRegistration(UserRegisterReq request);
+
+        Task<UserLogInResp> userLogIn(UserLogInReq request);
+
+        Task<UserInfoResp> GetUserInfo(long uid);
+
     }
 }

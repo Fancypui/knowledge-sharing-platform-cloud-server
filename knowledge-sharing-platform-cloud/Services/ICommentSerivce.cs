@@ -8,8 +8,9 @@ namespace knowledge_sharing_platform_cloud.Services
     public interface ICommentSerivce
     {
 
-        public Task<IEnumerable<CommentListResp>> CommentList(CommentListReq request);
+        public Task<CursorBasedResp<CommentListResp>> CommentList(CommentListReq request);
 
         public Task<ReplyPostCommentResp> ReplyPostComment(ReplyPostCommentReq request, long uid);
+ 
     }
 }

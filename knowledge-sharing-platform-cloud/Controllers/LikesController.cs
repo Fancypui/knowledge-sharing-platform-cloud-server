@@ -2,6 +2,7 @@
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.LikesResp;
 using knowledge_sharing_platform_cloud.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace knowledge_sharing_platform_cloud.Controllers
@@ -20,19 +21,21 @@ namespace knowledge_sharing_platform_cloud.Controllers
 
 
         [HttpPost]
+        [Authorize]
         public async Task<ApiResult<LikeDislikePostResp>> LikeDislikePost(LikeDislikePostReq likeDislikePostReq)
         {
-            LikeDislikePostResp likeDislikePostResp = await _likesService.LikeDislikePost(likeDislikePostReq);
+            LikeDislikePostResp likeDislikePostResp = await _likesService.LikeDislikePost(likeDislikePostReq, long.Parse(HttpContext.Items["UserId"]?.ToString()));
 
             return ApiResult<LikeDislikePostResp>.ServiceSucess(likeDislikePostResp);
         }
 
         [HttpGet("post")]
-        public async Task<ApiResult<IEnumerable<UsersWhoLikedPostListResp>>> UserWhoLikedPostList([FromQuery] UsersWhoLikedPostListReq usersWhoLikedPostListReq)
+        [Authorize]
+        public async Task<ApiResult<CursorBasedResp<UsersWhoLikedPostListResp>>> UserWhoLikedPostList([FromQuery] UsersWhoLikedPostListReq usersWhoLikedPostListReq)
         {
-            IEnumerable<UsersWhoLikedPostListResp> usersWhoLikedPostListResp = await _likesService.UsersWhoLikedPostList(usersWhoLikedPostListReq);
+            CursorBasedResp<UsersWhoLikedPostListResp> usersWhoLikedPostListResp = await _likesService.UsersWhoLikedPostList(usersWhoLikedPostListReq);
 
-            return ApiResult<IEnumerable<UsersWhoLikedPostListResp>>.ServiceSucess(usersWhoLikedPostListResp);
+            return ApiResult<CursorBasedResp<UsersWhoLikedPostListResp>>.ServiceSucess(usersWhoLikedPostListResp);
         }
     }
 }

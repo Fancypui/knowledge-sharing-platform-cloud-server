@@ -23,9 +23,12 @@ namespace knowledge_sharing_platform_cloud.Data.Models
         public string? StripeAccountId { get; set; }
 
         [Column("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Column("created_time")]
         public DateTime CreatedTime { get; set; }
+
+        [Column("salt")]
+        public string Salt { get; set; }
     }
 }

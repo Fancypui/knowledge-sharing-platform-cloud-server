@@ -29,6 +29,10 @@ namespace knowledge_sharing_platform_cloud.Constant
          */
         public const string POST_IMAGE_PRESIGNED_URLS = "post_image_presigned_urls:post_{0}";
 
+        /**
+         * like post redis setNX key 
+         */
+        public const string LIKE_POST_KEY = "like_post:postId_{0}:userId_{1}";
 
         /**
          * format key

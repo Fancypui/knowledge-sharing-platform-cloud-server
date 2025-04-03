@@ -21,7 +21,9 @@ public class UserContext : DbContext
     public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<User> builder)
     {
         builder.HasKey(u => u.Id);
+        
     }
+    
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
