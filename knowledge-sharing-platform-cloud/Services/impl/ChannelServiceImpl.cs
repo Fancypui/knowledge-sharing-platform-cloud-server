@@ -1,4 +1,7 @@
-﻿using knowledge_sharing_platform_cloud.Cache;
+﻿using System.Text.Json;
+using System.Threading.Channels;
+using AWS.Messaging;
+using knowledge_sharing_platform_cloud.Cache;
 using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
@@ -20,6 +23,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly ChannelSummaryCache _channelSummaryCache;
         private readonly UserCache _userCache;
         private readonly ChannelLeaderboardCache _leaderboardCache;
+        private readonly IMessagePublisher _messagePublisher;
 
         private readonly IConfiguration _configuration;
         public ChannelServiceImpl(
@@ -30,6 +34,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             UserCache userCache,
             ChannelLeaderboardCache leaderboardCache,
             IStripeService stripeService,
+            IMessagePublisher messagePublisher,
             IConfiguration configuration)
         {
             _channelRepo = channelRepo;
@@ -40,6 +45,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             _userCache = userCache;
             _leaderboardCache = leaderboardCache;
             _configuration = configuration;
+            _messagePublisher = messagePublisher;
         }
 
         public async Task<CreateChannelResp> CreateChannel(CreateChannelReq createChannelReq)
@@ -67,7 +73,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             Price channelAsStripeProduct = _stripeService.CreateStripeProductPrice(userStripeAccountId, productPrice, productName);
 
             // create new record of channel in db
-            Channel newChannel = new()
+            Data.Models.Channel newChannel = new()
             {
                 Topic = createChannelReq.Topic,
                 Description = createChannelReq.Description,
@@ -80,6 +86,20 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             await _channelRepo.CreateChannelAsync(newChannel);
 
+            try
+            {
+                var channelLeaderboardDTO = new ChannelLeaderboardDTO
+                {
+                    channelId = newChannel.Id
+                };
+                await _messagePublisher.PublishAsync(channelLeaderboardDTO);
+                Console.WriteLine("cibai");
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
             CreateChannelResp response = new()
             {
                 ChannelId = newChannel.Id,
@@ -90,7 +110,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<JoinChannelResp> JoinChannel(JoinChannelReq joinChannelReq)
         {
-            Channel channelToBeJoined = await _channelRepo.GetChannelbyIdAsync(joinChannelReq.ChannelId);
+            var channelToBeJoined = await _channelRepo.GetChannelbyIdAsync(joinChannelReq.ChannelId);
 
             if (channelToBeJoined == null)
             {
@@ -124,43 +144,93 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<String> JoinChannelSuccess(string userId, string channelId, decimal feePaid)
+        public async Task<JoinChannelSuccessResp> JoinChannelSuccess(string userId, string channelId, decimal feePaid)
         {
             ChannelMember channelMember = new()
             {
                 UserId = long.Parse(userId),
                 ChannelId = long.Parse(channelId),
-                SubscriptionFeePaid = feePaid,
+                SubscriptionFeePaid = feePaid / 100,
             };
 
-            await _channelMemberRepo.CreateChanneMemberlAsync(channelMember);
+            await _channelMemberRepo.CreateChannelMemberAsync(channelMember);
 
             await _channelRepo.IncreaseTotalMemberByOne(long.Parse(channelId));
+            
 
-            // push 
-
-            return "nice";
-        }
-
-        public async Task<String> JoinChannelFail(string userId, string channelId, decimal feePaid)
-        {
-            ChannelMember channelMember = new()
+            JoinChannelSuccessResp response = new()
             {
-                UserId = long.Parse(userId),
                 ChannelId = long.Parse(channelId),
-                SubscriptionFeePaid = feePaid,
             };
 
-            await _channelMemberRepo.CreateChanneMemberlAsync(channelMember);
+            WSRespBase<JoinChannelSuccessResp> wsResponse = new()
+            {
+                Type = (int)Enum.WSRespTypeEnum.PAYMENT_SUCCESS,
+                Data = response,
+            };
 
+            PushNotificationDTO pushPaymentSuccessNotification = new()
+            {
+                UserIdList = [long.Parse(userId)],
+                Type = Enum.PushNotificationType.SEND_TO_INDIVIDUAL,
+            };
+
+            pushPaymentSuccessNotification.SetResp(wsResponse);
+
+            //MessageEnvelope<PushNotificationDTO> envelope = new()
+            //{
+            //    Message = pushPaymentSuccessNotification,
+            //};
+
+            try
+            {
+                var channelLeaderboardDTO = new ChannelLeaderboardDTO
+                {
+                    channelId = long.Parse(channelId)
+                };
+                
+                await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
+                await _messagePublisher.PublishAsync(channelLeaderboardDTO);
+                Console.WriteLine("cibai");
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            return response;
+        }
+
+        public async Task<String> JoinChannelFail()
+        {
             // use websocket to emit message to FE on payment success
+
+            JoinChannelSuccessResp response = new()
+            {
+                ChannelId = long.Parse("21000"),
+            };
+
+            WSRespBase<JoinChannelSuccessResp> wsResponse = new()
+            {
+                Type = (int)Enum.WSRespTypeEnum.PAYMENT_SUCCESS,
+                Data = response,
+            };
+
+            PushNotificationDTO pushPaymentSuccessNotification = new()
+            {
+                RespJson = JsonSerializer.Serialize(wsResponse),
+                UserIdList = [],
+                Type = Enum.PushNotificationType.SEND_TO_INDIVIDUAL,
+            };
+
+            //await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
 
             return "nice";
         }
 
         public async Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq, long uid)
         {
-            Channel channel = await _channelRepo.GetChannelbyIdAsync(getChannelSummaryReq.ChannelId);
+            var channel = await _channelRepo.GetChannelbyIdAsync(getChannelSummaryReq.ChannelId);
 
             if (channel == null)
             {
@@ -189,7 +259,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<GetChannelOwnerSummaryResp> GetChannelOwnerSummary(GetChannelOwnerSummaryReq getChannelOwnerSummaryReq)
         {
-            Channel channel = await _channelRepo.GetChannelbyIdAsync(getChannelOwnerSummaryReq.ChannelId);
+            var channel = await _channelRepo.GetChannelbyIdAsync(getChannelOwnerSummaryReq.ChannelId);
 
             if (channel == null)
             {
@@ -217,16 +287,22 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<IEnumerable<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq)
         {
-            IEnumerable<Channel> channelList = await _channelRepo.GetChannelByName(searchChannelByTopicReq.Topic);
+            var channelList = await _channelRepo.GetChannelByName(searchChannelByTopicReq.Topic);
 
-            IEnumerable<SearchChannelByTopicResp> response = channelList.Select(channel =>
+            IEnumerable<SearchChannelByTopicResp> response = await Task.WhenAll(channelList.Select(async channel =>
             {
+                //bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(searchChannelByTopicReq.UserId, channel.Id);
+
                 return new SearchChannelByTopicResp()
                 {
                     ChannelId = channel.Id,
                     ChannelTopic = channel.Topic,
+                    SubscriptionFee = channel.SubscriptionFee,
+                    ChannelDesc = channel.Description,
+                    ChannelImgBackground = channel.ChannelImgBackground,
+                    //IsUserJoined = isUserJoinedChannel,
                 };
-            });
+            }));
 
             return response;
         }
@@ -260,7 +336,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     ChannelTitle = channel?.Topic ?? null,
                     ChannelId = entry.Id,
                     TotalMemberCount = entry.TotalMember,
-                    ChannelDescription = channel?.Topic ?? null,
+                    ChannelDescription = channel?.Description ?? null,
                     ChannelProfileUrl = channel?.ChannelImgUrl ?? null,
                     ChannelBackgroundUrl = channel?.ChannelImgUrl ?? null,
 

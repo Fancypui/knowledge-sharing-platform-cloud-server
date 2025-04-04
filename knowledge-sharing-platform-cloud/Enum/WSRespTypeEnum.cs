@@ -2,7 +2,7 @@
 {
     public enum WSRespTypeEnum
     {
-        PAYMENT_SUCESS=1,
+        PAYMENT_SUCCESS=1,
         PAYMENT_FAIL=2
     }
 }

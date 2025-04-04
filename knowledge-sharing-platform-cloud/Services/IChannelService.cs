@@ -12,8 +12,10 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<JoinChannelResp> JoinChannel(JoinChannelReq channel);
 
-        Task<String> JoinChannelSuccess(string userId, string channelId, decimal feePaid);
-                                              
+        Task<JoinChannelSuccessResp> JoinChannelSuccess(string userId, string channelId, decimal feePaid);
+
+        Task<String> JoinChannelFail();
+
         Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq,long uid);
 
         Task<GetChannelOwnerSummaryResp> GetChannelOwnerSummary(GetChannelOwnerSummaryReq getChannelOwnerSummaryReq);

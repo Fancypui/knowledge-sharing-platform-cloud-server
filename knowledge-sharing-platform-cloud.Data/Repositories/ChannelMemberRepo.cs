@@ -34,5 +34,15 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .Where(c => c.UserId == userId && c.ChannelId == channelId)
                 .CountAsync() >= 1;
         }
+
+        public async Task<ChannelMember> CreateChannelMemberAsync(ChannelMember channelMember)
+        {
+            if (channelMember == null) throw new ArgumentNullException(nameof(channelMember));
+
+            _applicationContext.ChannelMember.Add(channelMember);
+            _applicationContext.SaveChanges();
+            return channelMember;
+
+        }
     }
 }
