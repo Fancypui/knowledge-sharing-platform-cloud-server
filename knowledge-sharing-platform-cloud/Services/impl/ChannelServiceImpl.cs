@@ -361,9 +361,24 @@ namespace knowledge_sharing_platform_cloud.Services.impl
              */
             var channelIds = channelLeaderboardEntries.Select(c => c.Id).ToList();
             var channelSummary = await _channelSummaryCache.GetBatch(channelIds);
-            var listData = channelLeaderboardEntries.Select(entry =>
+            var listData = await Task.WhenAll(channelLeaderboardEntries.Select(async entry =>
             {
                 var channel = channelSummary.GetValueOrDefault(entry.Id, null);
+
+                GetS3PresignedUrlResp s3Response = null;
+
+                if (channel.ChannelImgBackground != null)
+                {
+                    GetS3PresignedUrlReq s3Request = new()
+                    {
+                        ObjectKey = channel.ChannelImgBackground
+                    };
+
+                    s3Response = await _s3Service.GeneratePresignedUrlToRetrieve([s3Request]);
+
+                }
+
+
                 return new ChannelLeaderboardListResp
                 {
                     ChannelTitle = channel?.Topic ?? null,
@@ -371,11 +386,11 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     TotalMemberCount = entry.TotalMember,
                     ChannelDescription = channel?.Description ?? null,
                     ChannelProfileUrl = channel?.ChannelImgUrl ?? null,
-                    ChannelBackgroundUrl = channel?.ChannelImgUrl ?? null,
+                    ChannelBackgroundUrl = channel?.ChannelImgBackground != null ? s3Response.S3PresignedUrls[0] : null,
 
                 };
 
-            }).ToList();
+            }).ToList());
             if (cursor == null)
             {
                 cursor = request.PageSize;
