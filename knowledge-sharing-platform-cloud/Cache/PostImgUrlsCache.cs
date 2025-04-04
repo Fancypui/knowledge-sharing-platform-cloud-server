@@ -1,5 +1,5 @@
 ﻿using knowledge_sharing_platform_cloud.Constant;
-using knowledge_sharing_platform_cloud.Data.Models.Post;
+using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Models.DTO;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;

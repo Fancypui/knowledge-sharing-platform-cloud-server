@@ -2,7 +2,6 @@
 using knowledge_sharing_platform_cloud.Cache;
 using knowledge_sharing_platform_cloud.Constant;
 using knowledge_sharing_platform_cloud.Data.Models;
-using knowledge_sharing_platform_cloud.Data.Models.Likes;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.LikesReq;

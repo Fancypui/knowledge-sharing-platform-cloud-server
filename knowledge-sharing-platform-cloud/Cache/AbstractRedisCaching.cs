@@ -1,8 +1,6 @@
 ﻿
 using System.Text.Json;
 using knowledge_sharing_platform_cloud.Constant;
-using knowledge_sharing_platform_cloud.Data.Models.Comment;
-using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
 
 namespace knowledge_sharing_platform_cloud.Cache

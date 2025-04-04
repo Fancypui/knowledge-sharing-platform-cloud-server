@@ -1,28 +1,28 @@
-﻿using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
+﻿using knowledge_sharing_platform_cloud.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
 {
     public class ChannelMemberRepo
     {
-        private readonly ChannelMemberContext _channelMemberContext;
+        private readonly ApplicationContext _applicationContext;
 
-        public ChannelMemberRepo(ChannelMemberContext channelMemberContext)
+        public ChannelMemberRepo(ApplicationContext applicationContext)
         {
-            _channelMemberContext = channelMemberContext;
+            _applicationContext = applicationContext;
         }
 
         public async Task<ChannelMember> CreateChanneMemberlAsync(ChannelMember channelMember)
         {
-            _channelMemberContext.ChannelMember.Add(channelMember);
-            await _channelMemberContext.SaveChangesAsync();
+            _applicationContext.ChannelMember.Add(channelMember);
+            await _applicationContext.SaveChangesAsync();
 
             return channelMember;
         }
 
         public async Task<IEnumerable<long>> GetUserJoinedChannels(long userId)
         {
-            return await _channelMemberContext.ChannelMember
+            return await _applicationContext.ChannelMember
                 .Where(c => c.UserId == userId)
                 .Select(c => c.ChannelId)
                 .ToListAsync();
@@ -30,7 +30,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
 
         public async Task<bool> CheckUserJoinChannel(long userId, long channelId)
         {
-            return await _channelMemberContext.ChannelMember
+            return await _applicationContext.ChannelMember
                 .Where(c => c.UserId == userId && c.ChannelId == channelId)
                 .CountAsync() >= 1;
         }

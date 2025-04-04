@@ -1,8 +1,8 @@
 ﻿using Azure.Identity;
-using knowledge_sharing_platform_cloud.Data.Models.Channel;
-using knowledge_sharing_platform_cloud.Data.Models.Comment;
+using knowledge_sharing_platform_cloud.Data.Models;
+
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.VisualBasic;
 using System.ComponentModel;
@@ -13,49 +13,50 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
 {
     public class ChannelRepo
     {
-        private readonly ChannelContext _channelContext;
+        private readonly ApplicationContext _applicationContext;
 
-        public ChannelRepo(ChannelContext channelContext) { 
-            _channelContext = channelContext;
+        public ChannelRepo(ApplicationContext applicationContext)
+        {
+            _applicationContext = applicationContext;
         }
 
         public async Task<Channel> CreateChannelAsync(Channel channel)
         {
-            _channelContext.Channel.Add(channel);
-            await _channelContext.SaveChangesAsync();
+            _applicationContext.Channel.Add(channel);
+            await _applicationContext.SaveChangesAsync();
 
             return channel;
         }
 
         public async Task<Channel> GetChannelbyIdAsync(long id)
         {
-            return await _channelContext.Channel.FindAsync(id);
+            return await _applicationContext.Channel.FindAsync(id);
         }
 
         public async Task<IEnumerable<Channel>> GetChannelByIds(List<long> ids)
         {
-            return await _channelContext.Channel
+            return await _applicationContext.Channel
                 .Where(c => ids.Contains(c.Id))
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Channel>> GetChannelByUserId(long userId)
         {
-            return await _channelContext.Channel
+            return await _applicationContext.Channel
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
         }
 
         public async Task<bool> IncreaseTotalMemberByOne(long channelId)
         {
-            return await _channelContext.Channel
+            return await _applicationContext.Channel
                 .Where(c => c.Id == channelId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalMember, c => c.TotalMember + 1)) > 0;
         }
 
         public async Task<IEnumerable<Channel>> GetChannelByName(string topicName)
         {
-            var channelList = await _channelContext.Channel
+            var channelList = await _applicationContext.Channel
                 .Where(c => EF.Functions.Like(c.Topic, $"%{topicName}%"))
                 .Take(10)
                 .ToListAsync();
@@ -65,7 +66,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
 
         public async Task<int> TotalMemberByChannelId(long channelId)
         {
-            var memberCount = await _channelContext.Channel
+            var memberCount = await _applicationContext.Channel
             .Where(c => c.Id == channelId)
             .Select(c => c.TotalMember)
             .FirstOrDefaultAsync();
@@ -76,7 +77,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
 
         public async Task<List<(long Id, int TotalMember)>> GetTop500Channels()
         {
-            var result = await _channelContext.Channel
+            var result = await _applicationContext.Channel
                 .OrderByDescending(c => c.TotalMember)
                 .Select(c => new { c.Id, c.TotalMember })
                 .Take(500)
@@ -85,7 +86,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         }
         public async Task<int> GetChannelCountUpTo500()
         {
-            return await _channelContext.Channel
+            return await _applicationContext.Channel
                 .Take(500) 
                 .CountAsync(); 
         }
@@ -95,9 +96,9 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         {
             if (transaction != null)
             {
-                _channelContext.Database.UseTransaction(transaction.GetDbTransaction());
+                _applicationContext.Database.UseTransaction(transaction.GetDbTransaction());
             }
-            return await _channelContext.Channel
+            return await _applicationContext.Channel
                 .Where(c => c.Id == channelId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalPost, c => c.TotalPost + 1)) > 0;
         }

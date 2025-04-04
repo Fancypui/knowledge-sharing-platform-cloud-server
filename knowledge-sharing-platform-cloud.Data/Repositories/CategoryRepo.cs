@@ -1,48 +1,47 @@
-﻿using knowledge_sharing_platform_cloud.Data.Models.Category;
-using knowledge_sharing_platform_cloud.Data.Models.Channel;
+﻿using knowledge_sharing_platform_cloud.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
 {
     public class CategoryRepo
     {
-        CategoryContext _categoryContext;
+        private readonly ApplicationContext _applicationContext;
 
-        public CategoryRepo(CategoryContext categoryContext)
+        public CategoryRepo(ApplicationContext applicationContext)
         {
-            _categoryContext = categoryContext;
+            _applicationContext = applicationContext;
         }
 
         public async Task<Category> CreateCategoryAsync(Category category)
         {
-            _categoryContext.Category.Add(category);
-            await _categoryContext.SaveChangesAsync();
+            _applicationContext.Category.Add(category);
+            await _applicationContext.SaveChangesAsync();
 
             return category;
         }
 
         public async Task<bool> UpdateCategoryMemberPrivilege(long categoryId, bool newMemberPrivilege)
         {
-            return await _categoryContext.Category
+            return await _applicationContext.Category
                 .Where(c => c.Id == categoryId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.MemberPrivilege, c => newMemberPrivilege)) > 0;
         }
         public async Task<Category?> GetByIdAsync(long categoryId)
         {
-            return await _categoryContext.Category.FirstOrDefaultAsync(c => c.Id == categoryId);
+            return await _applicationContext.Category.FirstOrDefaultAsync(c => c.Id == categoryId);
         }
 
 
         public async Task<IEnumerable<Category>> GetCategoriesByChannelId(long channelId)
         {
-            return await _categoryContext.Category
+            return await _applicationContext.Category
                 .Where(c => c.ChannelId == channelId)
                 .ToListAsync();
         }
 
         public async Task<Category> GetCategoryById(long id)
         {
-            return await _categoryContext.Category.FindAsync(id);
+            return await _applicationContext.Category.FindAsync(id);
         }
     }
 }

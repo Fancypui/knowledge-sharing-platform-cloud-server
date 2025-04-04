@@ -1,7 +1,6 @@
 ﻿using System.Xml.Linq;
 using knowledge_sharing_platform_cloud.Constant;
 using knowledge_sharing_platform_cloud.Data.Models;
-using knowledge_sharing_platform_cloud.Data.Models.Comment;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using StackExchange.Redis;
 

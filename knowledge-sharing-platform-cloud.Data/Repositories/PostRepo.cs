@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using knowledge_sharing_platform_cloud.Data.Models.Post;
+using knowledge_sharing_platform_cloud.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -11,24 +11,24 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
 {
     public class PostRepo
     {
-        PostContext _postContext;
+        private readonly ApplicationContext _applicationContext;
 
-        public PostRepo(PostContext postContext) 
-        { 
-            _postContext = postContext;
+        public PostRepo(ApplicationContext applicationContext)
+        {
+            _applicationContext = applicationContext;
         }
 
         public async Task<Post> CreatePostAsync(Post post)
         {
-            _postContext.Post.Add(post);
-            await _postContext.SaveChangesAsync();
+            _applicationContext.Post.Add(post);
+            await _applicationContext.SaveChangesAsync();
 
             return post;
         }
 
         public async Task<Post> GetPostById(long postId)
         {
-            return await _postContext.Post
+            return await _applicationContext.Post
             .Where(p => p.Id == postId && !p.DeletedStatus)
             .FirstOrDefaultAsync();
         }
@@ -37,7 +37,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         {
             if (cursor.HasValue && cursor > 0)
             {
-                return await _postContext.Post
+                return await _applicationContext.Post
                 .Where(p => p.CategoryId == channelCategoryId && !p.DeletedStatus)
                 .Where(p => p.Id < cursor)
                 .OrderByDescending(p => p.Id)
@@ -47,7 +47,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             }
             else
             {
-                return await _postContext.Post
+                return await _applicationContext.Post
                 .Where(p => p.CategoryId == channelCategoryId && !p.DeletedStatus)
                 .OrderByDescending(p => p.Id)
                 .Take(pageSize) // Fetch only pageSize posts
@@ -59,13 +59,13 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
 
         public async Task<List<Post>> GetPostImgUrlsByIds(List<long> ids)
         {
-            return await _postContext.Post
+            return await _applicationContext.Post
                 .Where(p => ids.Contains(p.Id) && !p.DeletedStatus)
                 .ToListAsync();
         }
         public async Task<IDbContextTransaction> GetTransactionAsync()
         {
-            return await _postContext.Database.BeginTransactionAsync();
+            return await _applicationContext.Database.BeginTransactionAsync();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using knowledge_sharing_platform_cloud.Data.Models.Channel;
+﻿
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.ChannelReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;

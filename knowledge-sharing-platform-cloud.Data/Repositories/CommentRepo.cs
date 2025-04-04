@@ -4,23 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using knowledge_sharing_platform_cloud.Data.Models;
-using knowledge_sharing_platform_cloud.Data.Models.Channel;
-using knowledge_sharing_platform_cloud.Data.Models.Comment;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace knowledge_sharing_platform_cloud.Data.Repositories
 {
     public class CommentRepo
     {
-        private readonly CommentContext _commentContext;
-        public CommentRepo(CommentContext commentContext)
+        private readonly ApplicationContext _applicationContext;
+
+        public CommentRepo(ApplicationContext applicationContext)
         {
-            _commentContext = commentContext;
+            _applicationContext = applicationContext;
         }
 
         public async Task<IEnumerable<Comment>> GetPaginatedComments(long postId, long rootId, long? cursor, int pageSize)
         {
-            var query = _commentContext.Comment
+            var query = _applicationContext.Comment
             .Where(c => c.PostId == postId && c.RootId == rootId);
 
             // Determine sorting order based on rootId
@@ -46,14 +46,14 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
         }
         public async Task<IEnumerable<Comment>> GetCommentByIds(List<long> ids)
         {
-            return await _commentContext.Comment
+            return await _applicationContext.Comment
                 .Where(c => ids.Contains(c.Id))
                 .ToListAsync();
         }
         public async Task<Comment> CreateCommentAsync(Comment comment)
         {
-            _commentContext.Comment.Add(comment);
-            await _commentContext.SaveChangesAsync();
+            _applicationContext.Comment.Add(comment);
+            await _applicationContext.SaveChangesAsync();
 
             return comment;
         }

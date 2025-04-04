@@ -4,20 +4,16 @@ using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Services.impl;
 using knowledge_sharing_platform_cloud.Services;
 using StackExchange.Redis;
-using knowledge_sharing_platform_cloud.Data.Models.Comment;
-using knowledge_sharing_platform_cloud.Data.Models.Post;
-using knowledge_sharing_platform_cloud.Data.Models;
+
 using knowledge_sharing_platform_cloud.Data.Repositories;
-using knowledge_sharing_platform_cloud.Data.Models.Channel;
-using knowledge_sharing_platform_cloud.Data.Models.Category;
-using knowledge_sharing_platform_cloud.Data.Models.Likes;
-using knowledge_sharing_platform_cloud.Data.Models.ChannelMember;
+
 using knowledge_sharing_platform_cloud.Websocket;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using Microsoft.AspNetCore.Mvc;
 using knowledge_sharing_platform_cloud.Data.Constant;
 using Microsoft.Data.SqlClient;
 using System.Data.Common;
+using knowledge_sharing_platform_cloud.Data.Models;
 
 namespace knowledge_sharing_platform_cloud.Config
 {
@@ -73,23 +69,15 @@ namespace knowledge_sharing_platform_cloud.Config
             /**
              * repo and context dependency injection
              */
-            var connectionString = configuration.GetConnectionString("sqlServer");
-            var sqlConnection = new SqlConnection(connectionString);
-            services.AddSingleton<DbConnection>(sqlConnection);
+            services.AddScoped<ApplicationContext, ApplicationContext>();
             services.AddScoped<UserRepo, UserRepo>();
             services.AddScoped<CommentRepo, CommentRepo>();
             services.AddScoped<PostRepo, PostRepo>();
-            services.AddScoped<PostContext, PostContext>();
-            services.AddScoped<UserContext, UserContext>();
-            services.AddScoped<CommentContext, CommentContext>();
             services.AddScoped<ChannelRepo>();
-            services.AddScoped<ChannelContext>();
             services.AddScoped<CategoryRepo>();
-            services.AddScoped<CategoryContext>();
             services.AddTransient<LikesRepo>();
-            services.AddTransient<LikesContext>();
             services.AddTransient<ChannelMemberRepo>();
-            services.AddTransient<ChannelMemberContext>();
+        
 
             /**
              * services dependency injection
