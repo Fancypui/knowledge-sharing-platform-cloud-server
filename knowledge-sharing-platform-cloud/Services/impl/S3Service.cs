@@ -29,7 +29,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToUpload(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
-            string bucketName = "ddac-assignment-s3-post-1";
+            string bucketName = "ddac-assignment-bucket-unresize";
 
             var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
             if (!bucketExists)
@@ -63,7 +63,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToRetrieve(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
-            string bucketName = "ddac-assignment-s3-post-1";
+            string bucketName = "ddac-bucket-assignment-resize";
 
             var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
             if (!bucketExists)
