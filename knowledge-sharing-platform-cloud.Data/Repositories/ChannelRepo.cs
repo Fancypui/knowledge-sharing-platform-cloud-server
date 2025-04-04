@@ -54,11 +54,12 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.TotalMember, c => c.TotalMember + 1)) > 0;
         }
 
-        public async Task<IEnumerable<Channel>> GetChannelByName(string topicName)
+        public async Task<IEnumerable<Channel>> GetChannelByName(string topicName, long? skip, int pageSize)
         {
             var channelList = await _applicationContext.Channel
                 .Where(c => EF.Functions.Like(c.Topic, $"%{topicName}%"))
-                .Take(10)
+                .Skip((int)(skip ?? 0))
+                .Take(pageSize)
                 .ToListAsync();
 
             return channelList;

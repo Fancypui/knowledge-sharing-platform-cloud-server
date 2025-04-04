@@ -42,12 +42,12 @@ namespace knowledge_sharing_platform_cloud.Controllers
                             decimal totalPaid = (decimal)checkoutSession.AmountTotal;
 
                             Console.WriteLine("it works");
-                            _channelService.JoinChannelSuccess(userId, channelId, totalPaid);
+                            await _channelService.JoinChannelSuccess(userId, channelId, totalPaid);
                         }
                         else if (checkoutSession.PaymentStatus == "unpaid")
                         {
                             Console.WriteLine($"Payment for session {checkoutSession.Id} was not successful.");
-                            //_channelService.JoinChannelFail();
+                            await _channelService.JoinChannelFail(checkoutSession.Metadata["channelId"]);
                         }
                         break;
 

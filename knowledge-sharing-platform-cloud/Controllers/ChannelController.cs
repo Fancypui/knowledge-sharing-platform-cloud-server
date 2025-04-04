@@ -55,11 +55,11 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ApiResult<IEnumerable<SearchChannelByTopicResp>>> SearchChannelByTopic([FromQuery] SearchChannelByTopicReq searchChannelByTopicReq)
+        public async Task<ApiResult<CursorBasedResp<SearchChannelByTopicResp>>> SearchChannelByTopic([FromQuery] SearchChannelByTopicReq searchChannelByTopicReq)
         {
-            IEnumerable<SearchChannelByTopicResp> channelList = await _channelService.SearchChannelByTopic(searchChannelByTopicReq);
+            CursorBasedResp<SearchChannelByTopicResp> channelList = await _channelService.SearchChannelByTopic(searchChannelByTopicReq);
 
-            return ApiResult<IEnumerable<SearchChannelByTopicResp>>.ServiceSucess(channelList);
+            return ApiResult<CursorBasedResp<SearchChannelByTopicResp>>.ServiceSucess(channelList);
         }
         [HttpGet("leaderboard/page")]
         public async Task<ApiResult<CursorBasedResp<ChannelLeaderboardListResp>>> ChannelLeaderboardPage([FromQuery] CursorBaseReq request)

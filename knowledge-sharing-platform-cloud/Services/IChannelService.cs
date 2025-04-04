@@ -14,7 +14,7 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<JoinChannelSuccessResp> JoinChannelSuccess(string userId, string channelId, decimal feePaid);
 
-        Task<String> JoinChannelFail();
+        Task<JoinChannelFailResp> JoinChannelFail(string channelId);
 
         Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq,long uid);
 
@@ -23,6 +23,6 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(CursorBaseReq request);
 
-        Task<IEnumerable<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq);
+        Task<CursorBasedResp<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq);
     }
 }

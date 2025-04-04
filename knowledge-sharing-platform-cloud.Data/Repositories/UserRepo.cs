@@ -35,6 +35,7 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
             return user;
         }
 
+
         public async Task<User> UpdateUserAsync(User updatedUser)
         {
             _applicationContext.User.Update(updatedUser);

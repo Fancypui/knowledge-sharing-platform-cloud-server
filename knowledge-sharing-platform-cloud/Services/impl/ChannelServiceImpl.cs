@@ -20,6 +20,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly UserRepo _userRepo;
         private readonly ChannelMemberRepo _channelMemberRepo;
         private readonly IStripeService _stripeService;
+        private readonly S3Service _s3Service;
         private readonly ChannelSummaryCache _channelSummaryCache;
         private readonly UserCache _userCache;
         private readonly ChannelLeaderboardCache _leaderboardCache;
@@ -33,6 +34,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             ChannelSummaryCache channelSummaryCache,
             UserCache userCache,
             ChannelLeaderboardCache leaderboardCache,
+            S3Service s3Service,
             IStripeService stripeService,
             IMessagePublisher messagePublisher,
             IConfiguration configuration)
@@ -40,6 +42,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             _channelRepo = channelRepo;
             _userRepo = userRepo;
             _channelMemberRepo = channelMemberRepo;
+            _s3Service = s3Service;
             _stripeService = stripeService;
             _channelSummaryCache = channelSummaryCache;
             _userCache = userCache;
@@ -93,7 +96,6 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     channelId = newChannel.Id
                 };
                 await _messagePublisher.PublishAsync(channelLeaderboardDTO);
-                Console.WriteLine("cibai");
             }
             catch (System.Exception ex)
             {
@@ -177,11 +179,6 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             pushPaymentSuccessNotification.SetResp(wsResponse);
 
-            //MessageEnvelope<PushNotificationDTO> envelope = new()
-            //{
-            //    Message = pushPaymentSuccessNotification,
-            //};
-
             try
             {
                 var channelLeaderboardDTO = new ChannelLeaderboardDTO
@@ -191,7 +188,6 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 
                 await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
                 await _messagePublisher.PublishAsync(channelLeaderboardDTO);
-                Console.WriteLine("cibai");
             }
             catch (System.Exception ex)
             {
@@ -201,31 +197,31 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<String> JoinChannelFail()
+        public async Task<JoinChannelFailResp> JoinChannelFail(string channelId)
         {
             // use websocket to emit message to FE on payment success
 
-            JoinChannelSuccessResp response = new()
+            JoinChannelFailResp response = new()
             {
-                ChannelId = long.Parse("21000"),
+                ChannelId = long.Parse(channelId),
             };
 
-            WSRespBase<JoinChannelSuccessResp> wsResponse = new()
+            WSRespBase<JoinChannelFailResp> wsResponse = new()
             {
-                Type = (int)Enum.WSRespTypeEnum.PAYMENT_SUCCESS,
+                Type = (int)Enum.WSRespTypeEnum.PAYMENT_FAIL,
                 Data = response,
             };
 
-            PushNotificationDTO pushPaymentSuccessNotification = new()
+            PushNotificationDTO pushPaymentFailNotification = new()
             {
                 RespJson = JsonSerializer.Serialize(wsResponse),
                 UserIdList = [],
                 Type = Enum.PushNotificationType.SEND_TO_INDIVIDUAL,
             };
 
-            //await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
+            await _messagePublisher.PublishAsync(pushPaymentFailNotification);
 
-            return "nice";
+            return response;
         }
 
         public async Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq, long uid)
@@ -285,13 +281,40 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<IEnumerable<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq)
+        public async Task<CursorBasedResp<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq)
         {
-            var channelList = await _channelRepo.GetChannelByName(searchChannelByTopicReq.Topic);
-
-            IEnumerable<SearchChannelByTopicResp> response = await Task.WhenAll(channelList.Select(async channel =>
+            long? cursor = null;
+            if (!searchChannelByTopicReq.IsFirstPage() && long.TryParse(searchChannelByTopicReq.Cursor, out var parsedCursor))
             {
-                //bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(searchChannelByTopicReq.UserId, channel.Id);
+                cursor = parsedCursor;
+            }
+
+            var channelList = await _channelRepo.GetChannelByName(searchChannelByTopicReq.Topic, cursor, searchChannelByTopicReq.PageSize);
+
+            var parentIds = channelList.Select(c => c.UserId).Where(c => c != 0).Distinct().ToList();
+
+            Dictionary<long, User> userMap = new Dictionary<long, User>();
+
+            if (parentIds.Any())
+            {
+                IEnumerable<User> result = await _userRepo.UserListByIds(parentIds);
+
+                userMap = result.ToDictionary(user => user.Id, user => user);
+            }
+
+
+            IEnumerable<SearchChannelByTopicResp> listData = await Task.WhenAll(channelList.Select(async channel =>
+            {
+                bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(searchChannelByTopicReq.UserId, channel.Id);
+
+                GetS3PresignedUrlReq s3Request = new()
+                {
+                    ObjectKey = channel.ChannelImgBackground
+                };
+
+                GetS3PresignedUrlResp s3Response = await _s3Service.GeneratePresignedUrlToRetrieve([s3Request]);
+
+                User? channelOwner = userMap.GetValueOrDefault(channel.UserId, null);
 
                 return new SearchChannelByTopicResp()
                 {
@@ -299,12 +322,22 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     ChannelTopic = channel.Topic,
                     SubscriptionFee = channel.SubscriptionFee,
                     ChannelDesc = channel.Description,
-                    ChannelImgBackground = channel.ChannelImgBackground,
-                    //IsUserJoined = isUserJoinedChannel,
+                    ChannelImgUrl = channelOwner?.Username ?? string.Empty,
+                    ChannelImgBackground = s3Response.S3PresignedUrls[0],
+                    IsUserJoined = isUserJoinedChannel,
                 };
             }));
 
-            return response;
+            if (cursor == null)
+            {
+                cursor = searchChannelByTopicReq.PageSize;
+            }
+            else
+            {
+                cursor = cursor + listData.Count();
+            }
+
+            return CursorBasedResp<SearchChannelByTopicResp>.Init(listData, cursor, listData.Count() < searchChannelByTopicReq.PageSize);
         }
 
         public async Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(CursorBaseReq request)

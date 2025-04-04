@@ -10,8 +10,10 @@
 
         public decimal? SubscriptionFee { get; set; }
 
+        public string ChannelImgUrl { get; set; }
+
         public string ChannelImgBackground { get; set; }
 
-        //public bool IsUserJoined { get; set; }
+        public bool IsUserJoined { get; set; }
     }
 }
