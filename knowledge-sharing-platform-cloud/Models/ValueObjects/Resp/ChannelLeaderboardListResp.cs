@@ -10,5 +10,6 @@ namespace knowledge_sharing_platform_cloud.Models.ValueObjects.Resp
         public string ChannelProfileUrl { get; set; }
         public string ChannelBackgroundUrl { get; set; }
         public int TotalMemberCount { get; set; }
+        public decimal? SubscriptionFee { get; set; }
     }
 }

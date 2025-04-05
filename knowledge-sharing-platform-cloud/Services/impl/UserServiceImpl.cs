@@ -3,7 +3,9 @@ using knowledge_sharing_platform_cloud.Data.Models;
 using knowledge_sharing_platform_cloud.Data.Repositories;
 using knowledge_sharing_platform_cloud.Exception;
 using knowledge_sharing_platform_cloud.Models.DTO;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.UserReq;
+using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.UserResp;
 using knowledge_sharing_platform_cloud.Utils;
 using Microsoft.Data.SqlClient;
@@ -27,7 +29,8 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             ChannelRepo channelRepo,
             ChannelMemberRepo channelMemberRepo,
             ChannelSummaryCache channelSummaryCache,
-            UserCache userCache)
+            UserCache userCache
+        )
         {
             _userRepo = userRepo;
             _channelRepo = channelRepo;

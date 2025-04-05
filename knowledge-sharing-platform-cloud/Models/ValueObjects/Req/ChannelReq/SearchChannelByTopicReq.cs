@@ -2,7 +2,7 @@
 {
     public class SearchChannelByTopicReq: CursorBaseReq
     {
-        public long UserId { get; set; }
+        public long? UserId { get; set; }
         public string Topic {  get; set; }
     }
 }

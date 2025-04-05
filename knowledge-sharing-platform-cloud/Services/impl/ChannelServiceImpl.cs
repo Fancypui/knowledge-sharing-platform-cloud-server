@@ -235,7 +235,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             TimeSpan channelOperationDuration = DateTime.Now - channel.CreatedTime;
 
-            bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(uid, getChannelSummaryReq.ChannelId);
+            IEnumerable<ChannelMember> isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannels(uid, [getChannelSummaryReq.ChannelId]);
 
             GetChannelSummaryResp response = new()
             {
@@ -247,7 +247,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 TotalMember = channel.TotalMember,
                 TotalPost  = channel.TotalPost,
                 OperationDuration = channelOperationDuration.TotalDays,
-                SubscriptionFee = isUserJoinedChannel ? channel.SubscriptionFee : null
+                SubscriptionFee = isUserJoinedChannel.Count() == 0 ? channel.SubscriptionFee : null
             };
 
             return response;    
@@ -295,15 +295,26 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             var channelList = await _channelRepo.GetChannelByName(searchChannelByTopicReq.Topic, cursor, searchChannelByTopicReq.PageSize);
 
-            var parentIds = channelList.Select(c => c.UserId).Where(c => c != 0).Distinct().ToList();
+            var channelOwnerIds = channelList.Select(c => c.UserId).Where(c => c != 0).Distinct().ToList();
 
             Dictionary<long, User> userMap = new Dictionary<long, User>();
 
-            if (parentIds.Any())
+            if (channelOwnerIds.Any())
             {
-                IEnumerable<User> result = await _userRepo.UserListByIds(parentIds);
+                IEnumerable<User> result = await _userRepo.UserListByIds(channelOwnerIds);
 
                 userMap = result.ToDictionary(user => user.Id, user => user);
+            }
+
+            var channelIds = channelList.Select(c => c.Id).Where(c => c!= 0).Distinct().ToList();
+
+            Dictionary<long, ChannelMember> joinedChannelsMap = new Dictionary<long, ChannelMember>();
+
+            if (channelIds.Any() && searchChannelByTopicReq.UserId is long userId)
+            {
+                IEnumerable<ChannelMember> joinedChannels = await _channelMemberRepo.CheckUserJoinChannels(userId, channelIds);
+                
+                joinedChannelsMap = joinedChannels.ToDictionary(joinedChannel => joinedChannel.ChannelId, joinedChannel => joinedChannel);
             }
 
 
@@ -324,16 +335,15 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     channelImgBackgroundPresignedUrl = s3Response.S3PresignedUrls.FirstOrDefault();
                 }
 
-
                 User? channelOwner = userMap.GetValueOrDefault(channel.UserId, null);
 
-
+                ChannelMember? userJoinedChannel = joinedChannelsMap.GetValueOrDefault(channel.Id, null);
 
                 return new SearchChannelByTopicResp()
                 {
                     ChannelId = channel.Id,
                     ChannelTopic = channel.Topic,
-                    SubscriptionFee = channel.SubscriptionFee,
+                    SubscriptionFee = channel.UserId != searchChannelByTopicReq.UserId && userJoinedChannel == null ? channel.SubscriptionFee : null,
                     ChannelDesc = channel.Description,
                     ChannelImgUrl = channelOwner?.Username ?? string.Empty,
                     ChannelImgBackground = channelImgBackgroundPresignedUrl??"",
@@ -346,7 +356,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return CursorBasedResp<SearchChannelByTopicResp>.Init(listData, cursorId, listData.Count() < searchChannelByTopicReq.PageSize);
         }
 
-        public async Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(CursorBaseReq request)
+        public async Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(ChannelLeaderboardListReq request)
         {
             long? cursor = null;
             if (!request.IsFirstPage() && long.TryParse(request.Cursor, out var parsedCursor))
@@ -367,6 +377,16 @@ namespace knowledge_sharing_platform_cloud.Services.impl
              */
             var channelIds = channelLeaderboardEntries.Select(c => c.Id).ToList();
             var channelSummary = await _channelSummaryCache.GetBatch(channelIds);
+
+            Dictionary<long, ChannelMember> joinedChannelsMap = new Dictionary<long, ChannelMember>();
+
+            if (channelIds.Any() && request.UserId is long userId)
+            {
+                IEnumerable<ChannelMember> joinedChannels = await _channelMemberRepo.CheckUserJoinChannels(userId, channelIds);
+
+                joinedChannelsMap = joinedChannels.ToDictionary(joinedChannel => joinedChannel.ChannelId, joinedChannel => joinedChannel);
+            }
+
             var listData = await Task.WhenAll(channelLeaderboardEntries.Select(async entry =>
             {
                 var channel = channelSummary.GetValueOrDefault(entry.Id, null);
@@ -386,6 +406,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     channelBackgroundPresignedUrl = s3Response?.S3PresignedUrls?.FirstOrDefault();
                 }
 
+                ChannelMember? userJoinedChannel = joinedChannelsMap.GetValueOrDefault(entry.Id, null);
 
                 return new ChannelLeaderboardListResp
                 {
@@ -395,6 +416,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     ChannelDescription = channel?.Description ?? null,
                     ChannelProfileUrl = channel?.ChannelImgUrl ?? null,
                     ChannelBackgroundUrl = channelBackgroundPresignedUrl,
+                    SubscriptionFee = channel.ChannelOwnerId != request.UserId && userJoinedChannel != null ? channel.SubscriptionFee : null,
 
                 };
 

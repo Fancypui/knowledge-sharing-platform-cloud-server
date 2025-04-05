@@ -20,8 +20,7 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<GetChannelOwnerSummaryResp> GetChannelOwnerSummary(GetChannelOwnerSummaryReq getChannelOwnerSummaryReq);
 
-
-        Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(CursorBaseReq request);
+        Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(ChannelLeaderboardListReq request);
 
         Task<CursorBasedResp<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq);
     }

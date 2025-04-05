@@ -64,7 +64,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
             return ApiResult<CursorBasedResp<SearchChannelByTopicResp>>.ServiceSucess(channelList);
         }
         [HttpGet("leaderboard/page")]
-        public async Task<ApiResult<CursorBasedResp<ChannelLeaderboardListResp>>> ChannelLeaderboardPage([FromQuery] CursorBaseReq request)
+        public async Task<ApiResult<CursorBasedResp<ChannelLeaderboardListResp>>> ChannelLeaderboardPage([FromQuery] ChannelLeaderboardListReq request)
         {
             CursorBasedResp<ChannelLeaderboardListResp> channelList = await _channelService.ChannelLeaderboardList(request);
 

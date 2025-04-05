@@ -28,11 +28,11 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> CheckUserJoinChannel(long userId, long channelId)
+        public async Task<IEnumerable<ChannelMember>> CheckUserJoinChannels(long userId, List<long> channelIds)
         {
             return await _applicationContext.ChannelMember
-                .Where(c => c.UserId == userId && c.ChannelId == channelId)
-                .CountAsync() >= 1;
+                .Where(cm => cm.UserId == userId && channelIds.Contains(cm.ChannelId))
+                .ToListAsync();
         }
 
         public async Task<ChannelMember> CreateChannelMemberAsync(ChannelMember channelMember)
