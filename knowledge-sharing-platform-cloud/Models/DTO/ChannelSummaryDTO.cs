@@ -12,6 +12,6 @@
 
         public string? ChannelImgBackground { get; set; }
 
-        public decimal SubscriptionFee { get; set; }
+        public decimal? SubscriptionFee { get; set; }
     }
 }

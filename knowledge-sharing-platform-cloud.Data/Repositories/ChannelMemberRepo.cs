@@ -35,6 +35,13 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<bool> CheckUserJoinChannel(long userId, long channelId)
+        {
+            return await _applicationContext.ChannelMember
+                         .Where(c => c.UserId == userId && c.ChannelId == channelId)
+                         .CountAsync() >= 1;
+        }
+
         public async Task<ChannelMember> CreateChannelMemberAsync(ChannelMember channelMember)
         {
             if (channelMember == null) throw new ArgumentNullException(nameof(channelMember));

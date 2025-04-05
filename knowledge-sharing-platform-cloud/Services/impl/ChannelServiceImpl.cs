@@ -310,9 +310,9 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             Dictionary<long, ChannelMember> joinedChannelsMap = new Dictionary<long, ChannelMember>();
 
-            if (channelIds.Any() && searchChannelByTopicReq.UserId is long userId)
+            if (channelIds.Any() && searchChannelByTopicReq.UserId != 0)
             {
-                IEnumerable<ChannelMember> joinedChannels = await _channelMemberRepo.CheckUserJoinChannels(userId, channelIds);
+                IEnumerable<ChannelMember> joinedChannels = await _channelMemberRepo.CheckUserJoinChannels(searchChannelByTopicReq.UserId, channelIds);
                 
                 joinedChannelsMap = joinedChannels.ToDictionary(joinedChannel => joinedChannel.ChannelId, joinedChannel => joinedChannel);
             }
@@ -380,9 +380,9 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             Dictionary<long, ChannelMember> joinedChannelsMap = new Dictionary<long, ChannelMember>();
 
-            if (channelIds.Any() && request.UserId is long userId)
+            if (channelIds.Any() && request.UserId!=0)
             {
-                IEnumerable<ChannelMember> joinedChannels = await _channelMemberRepo.CheckUserJoinChannels(userId, channelIds);
+                IEnumerable<ChannelMember> joinedChannels = await _channelMemberRepo.CheckUserJoinChannels(request.UserId, channelIds);
 
                 joinedChannelsMap = joinedChannels.ToDictionary(joinedChannel => joinedChannel.ChannelId, joinedChannel => joinedChannel);
             }
@@ -416,7 +416,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     ChannelDescription = channel?.Description ?? null,
                     ChannelProfileUrl = channel?.ChannelImgUrl ?? null,
                     ChannelBackgroundUrl = channelBackgroundPresignedUrl,
-                    SubscriptionFee = channel.ChannelOwnerId != request.UserId && userJoinedChannel != null ? channel.SubscriptionFee : null,
+                    SubscriptionFee = channel.ChannelOwnerId != request.UserId && userJoinedChannel == null ? channel.SubscriptionFee : null,
 
                 };
 
@@ -433,6 +433,17 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return CursorBasedResp<ChannelLeaderboardListResp>.Init(listData, cursor, listData.Count() < request.PageSize);
 
 
+        }
+
+        public async Task<CheckUserJoinChannelResp> CheckUserJoinChannel(CheckUserJoinChannel request)
+        {
+            var joinned = await _channelMemberRepo.CheckUserJoinChannel(request.UserId, request.ChannelId);
+            var channelSummary = await _channelSummaryCache.Get(request.ChannelId);
+            bool isChannelOwner = channelSummary != null && channelSummary.ChannelOwnerId == request.UserId;
+            return new CheckUserJoinChannelResp
+            {
+                Joinned = joinned || isChannelOwner
+            };
         }
     }
 }

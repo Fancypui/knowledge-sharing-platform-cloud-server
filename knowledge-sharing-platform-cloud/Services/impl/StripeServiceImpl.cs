@@ -83,6 +83,14 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                         Quantity = 1,
                     },
                 },
+                AfterCompletion = new PaymentLinkAfterCompletionOptions
+                {
+                    Type = "redirect",
+                    Redirect = new PaymentLinkAfterCompletionRedirectOptions
+                    {
+                        Url = "http://localhost:3000/home"
+                    }
+                },
                 Metadata = new Dictionary<string, string>
                 {
                     { "userId", subscriberUserId.ToString() },

@@ -27,7 +27,8 @@ namespace knowledge_sharing_platform_cloud.Cache
                 Description = c.Description,
                 ChannelImgUrl = c.ChannelImgUrl,
                 ChannelImgBackground = c.ChannelImgBackground,
-                ChannelOwnerId = c.UserId
+                ChannelOwnerId = c.UserId,
+                SubscriptionFee = c.SubscriptionFee
             });
         }
     }

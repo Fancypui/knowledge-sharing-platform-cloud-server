@@ -70,5 +70,12 @@ namespace knowledge_sharing_platform_cloud.Controllers
 
             return ApiResult<CursorBasedResp<ChannelLeaderboardListResp>>.ServiceSucess(channelList);
         }
+        [HttpGet("checkJoin")]
+        public async Task<ApiResult<CheckUserJoinChannelResp>> checkUserJoinChannel([FromQuery] CheckUserJoinChannel request)
+        {
+            var joinnedResp = await _channelService.CheckUserJoinChannel(request);
+
+            return ApiResult< CheckUserJoinChannelResp >.ServiceSucess(joinnedResp);
+        }
     }
 }

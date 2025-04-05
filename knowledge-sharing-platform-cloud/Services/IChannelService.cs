@@ -23,5 +23,7 @@ namespace knowledge_sharing_platform_cloud.Services
         Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(ChannelLeaderboardListReq request);
 
         Task<CursorBasedResp<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq);
+
+        Task<CheckUserJoinChannelResp> CheckUserJoinChannel(CheckUserJoinChannel request);
     }
 }
