@@ -283,6 +283,10 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<CursorBasedResp<SearchChannelByTopicResp>> SearchChannelByTopic(SearchChannelByTopicReq searchChannelByTopicReq)
         {
+            
+            /**
+             * cursor conversion
+             */
             long? cursor = null;
             if (!searchChannelByTopicReq.IsFirstPage() && long.TryParse(searchChannelByTopicReq.Cursor, out var parsedCursor))
             {
@@ -305,16 +309,25 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             IEnumerable<SearchChannelByTopicResp> listData = await Task.WhenAll(channelList.Select(async channel =>
             {
-                bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(searchChannelByTopicReq.UserId, channel.Id);
+                //bool isUserJoinedChannel = await _channelMemberRepo.CheckUserJoinChannel(searchChannelByTopicReq.UserId, channel.Id);
 
-                GetS3PresignedUrlReq s3Request = new()
+                string? channelImgBackgroundPresignedUrl = null;
+                if (!string.IsNullOrWhiteSpace(channel.ChannelImgBackground))
                 {
-                    ObjectKey = channel.ChannelImgBackground
-                };
+                    GetS3PresignedUrlReq s3Request = new()
+                    {
+                        ObjectKey = channel.ChannelImgBackground
+                    };
 
-                GetS3PresignedUrlResp s3Response = await _s3Service.GeneratePresignedUrlToRetrieve([s3Request]);
+                    GetS3PresignedUrlResp s3Response = await _s3Service.GeneratePresignedUrlToRetrieve([s3Request]);
+
+                    channelImgBackgroundPresignedUrl = s3Response.S3PresignedUrls.FirstOrDefault();
+                }
+
 
                 User? channelOwner = userMap.GetValueOrDefault(channel.UserId, null);
+
+
 
                 return new SearchChannelByTopicResp()
                 {
@@ -323,21 +336,14 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     SubscriptionFee = channel.SubscriptionFee,
                     ChannelDesc = channel.Description,
                     ChannelImgUrl = channelOwner?.Username ?? string.Empty,
-                    ChannelImgBackground = s3Response.S3PresignedUrls[0],
-                    IsUserJoined = isUserJoinedChannel,
+                    ChannelImgBackground = channelImgBackgroundPresignedUrl??"",
+                    //IsUserJoined = isUserJoinedChannel,
                 };
             }));
 
-            if (cursor == null)
-            {
-                cursor = searchChannelByTopicReq.PageSize;
-            }
-            else
-            {
-                cursor = cursor + listData.Count();
-            }
+            long? cursorId = listData.Any() ? listData.Min(channelSearchResult => channelSearchResult.ChannelId) : null;
 
-            return CursorBasedResp<SearchChannelByTopicResp>.Init(listData, cursor, listData.Count() < searchChannelByTopicReq.PageSize);
+            return CursorBasedResp<SearchChannelByTopicResp>.Init(listData, cursorId, listData.Count() < searchChannelByTopicReq.PageSize);
         }
 
         public async Task<CursorBasedResp<ChannelLeaderboardListResp>> ChannelLeaderboardList(CursorBaseReq request)
@@ -365,17 +371,19 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             {
                 var channel = channelSummary.GetValueOrDefault(entry.Id, null);
 
-                GetS3PresignedUrlResp s3Response = null;
+                string? channelBackgroundPresignedUrl = null;
 
-                if (channel.ChannelImgBackground != null)
+
+                if (!string.IsNullOrWhiteSpace(channel?.ChannelImgBackground))
                 {
                     GetS3PresignedUrlReq s3Request = new()
                     {
                         ObjectKey = channel.ChannelImgBackground
                     };
 
-                    s3Response = await _s3Service.GeneratePresignedUrlToRetrieve([s3Request]);
+                    var s3Response = await _s3Service.GeneratePresignedUrlToRetrieve([s3Request]);
 
+                    channelBackgroundPresignedUrl = s3Response?.S3PresignedUrls?.FirstOrDefault();
                 }
 
 
@@ -386,14 +394,14 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     TotalMemberCount = entry.TotalMember,
                     ChannelDescription = channel?.Description ?? null,
                     ChannelProfileUrl = channel?.ChannelImgUrl ?? null,
-                    ChannelBackgroundUrl = channel?.ChannelImgBackground != null ? s3Response.S3PresignedUrls[0] : null,
+                    ChannelBackgroundUrl = channelBackgroundPresignedUrl,
 
                 };
 
             }).ToList());
             if (cursor == null)
             {
-                cursor = request.PageSize;
+                cursor = listData.Count();
             }
             else
             {

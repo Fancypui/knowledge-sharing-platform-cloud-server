@@ -14,6 +14,6 @@
 
         public string ChannelImgBackground { get; set; }
 
-        public bool IsUserJoined { get; set; }
+        //public bool IsUserJoined { get; set; }
     }
 }
