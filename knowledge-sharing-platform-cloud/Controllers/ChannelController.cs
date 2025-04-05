@@ -23,6 +23,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
 
 
         [HttpPost]
+        [Authorize]
         public async Task<ApiResult<CreateChannelResp>> CreateChannel(CreateChannelReq createChannelReq)
         {
             CreateChannelResp createChannelResp = await _channelService.CreateChannel(createChannelReq);
@@ -31,6 +32,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpPost("join")]
+        [Authorize]
         public async Task<ApiResult<JoinChannelResp>> JoinChannel(JoinChannelReq joinChannelReq)
         {
             JoinChannelResp joinChannelResp = await _channelService.JoinChannel(joinChannelReq);

@@ -22,13 +22,13 @@ namespace knowledge_sharing_platform_cloud.Controllers
             _logger = logger;
         }
 
-        [HttpPost]
-        public async Task<ApiResult<CreateUserResp>> CreateUser(CreateUserReq createUserReq)
-        {
-            CreateUserResp createUserResp = await _userService.CreateUser(createUserReq);
+        //[HttpPost]
+        //public async Task<ApiResult<CreateUserResp>> CreateUser(CreateUserReq createUserReq)
+        //{
+        //    CreateUserResp createUserResp = await _userService.CreateUser(createUserReq);
 
-            return ApiResult<CreateUserResp>.ServiceSucess(createUserResp);
-        }
+        //    return ApiResult<CreateUserResp>.ServiceSucess(createUserResp);
+        //}
 
         [HttpGet("joinedChannels")]
         [Authorize]

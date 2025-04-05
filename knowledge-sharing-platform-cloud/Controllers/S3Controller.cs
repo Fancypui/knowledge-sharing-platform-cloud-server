@@ -56,6 +56,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpPost("url/retrieve")]
+        [Authorize]
         public async Task<ApiResult<GetS3PresignedUrlResp>> GeneratePresignedUrlToRetrieve(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
             GetS3PresignedUrlResp getS3PresignedUrlResp = await _s3Service.GeneratePresignedUrlToRetrieve(getS3PresignedUrlReq);
