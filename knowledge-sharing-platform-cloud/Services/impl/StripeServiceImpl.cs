@@ -7,10 +7,12 @@ namespace knowledge_sharing_platform_cloud.Services.impl
     public class StripeServiceImpl : IStripeService
     {
         IConfiguration _configuration;
+        private readonly string _stripedRedirectUrl;
         public StripeServiceImpl(IConfiguration configuration)
         {
             _configuration = configuration;
             StripeConfiguration.ApiKey = _configuration["StripeApiSecretKey"];
+            _stripedRedirectUrl = _configuration["StripeRedirectUrl"];
         }
 
         public Account CreateStripeAccount(User user)
@@ -88,7 +90,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                     Type = "redirect",
                     Redirect = new PaymentLinkAfterCompletionRedirectOptions
                     {
-                        Url = "http://localhost:3000/home"
+                        Url = _stripedRedirectUrl
                     }
                 },
                 Metadata = new Dictionary<string, string>

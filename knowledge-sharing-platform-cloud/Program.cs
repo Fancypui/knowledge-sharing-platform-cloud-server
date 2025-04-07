@@ -1,9 +1,26 @@
 using knowledge_sharing_platform_cloud.Config;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+
+// Get logger instance for startup configuration
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+string luaFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Cache", "ChannelLeaderboardUpdate.lua");
+logger.LogInformation("Checking for Lua script at path: {LuaFilePath}", luaFilePath);
+
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
 builder.Services.ConfigureAwsServices(builder.Configuration);
+/**
+ * add health check for application load balancer
+ */
+builder.Services.AddHealthChecks();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CORSOpenPolicy",
@@ -43,7 +60,7 @@ var websocketOptions = new WebSocketOptions
 app.UseWebSockets(websocketOptions);
 
 app.MapControllers();
-
+app.MapHealthChecks("/health");
 app.Run();
 
 

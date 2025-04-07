@@ -11,10 +11,15 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly IAmazonS3 _s3Client;
 
         private static HttpClient _httpClient = new HttpClient();
+        private readonly string _resizeBucket;
 
-        public S3Service(IAmazonS3 s3Client)
+        private readonly string _unresizeBucket;
+
+        public S3Service(IAmazonS3 s3Client, IConfiguration config)
         {
             _s3Client = s3Client;
+            _unresizeBucket = config["AWS:S3UnoptimizedBucket"];
+            _resizeBucket = config["AWS:S3OptimizedBucket"];
         }
 
         public async Task<HttpResponseMessage> UploadFileAsync(string filePath, string url)
@@ -29,7 +34,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToUpload(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
-            string bucketName = "ddac-assignment-bucket-unresize";
+            string bucketName = _unresizeBucket;
 
             var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
             if (!bucketExists)
@@ -63,7 +68,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<GetS3PresignedUrlResp> GeneratePresignedUrlToRetrieve(IEnumerable<GetS3PresignedUrlReq> getS3PresignedUrlReq)
         {
-            string bucketName = "ddac-bucket-assignment-resize";
+            string bucketName = _resizeBucket;
 
             var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
             if (!bucketExists)

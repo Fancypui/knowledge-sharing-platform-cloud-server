@@ -64,12 +64,12 @@ namespace knowledge_sharing_platform_cloud.Controllers
             return ApiResult<GetS3PresignedUrlResp>.ServiceSucess(getS3PresignedUrlResp);
         }
 
-        [HttpPost("testing")]
-        public async Task<HttpResponseMessage> UploadFileAsync(string filePath, string url)
-        {
-            var message = await _s3Service.UploadFileAsync(filePath, url);
+        //[HttpPost("testing")]
+        //public async Task<HttpResponseMessage> UploadFileAsync(string filePath, string url)
+        //{
+        //    var message = await _s3Service.UploadFileAsync(filePath, url);
 
-            return message;
-        }
+        //    return message;
+        //}
     }
 }

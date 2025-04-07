@@ -18,15 +18,10 @@ namespace knowledge_sharing_platform_cloud.Cache
         public ChannelLeaderboardCache(IConnectionMultiplexer redis, ChannelRepo channelRepo)
         {
             _redisDB = redis.GetDatabase();
-            string luaFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Properties", "ChannelLeaderboardUpdate.lua");
-            if (File.Exists(luaFilePath))
-            {
-                _luaScript = File.ReadAllText(luaFilePath);
-            }
-            else
-            {
-                throw new FileNotFoundException("Lua script file not found: " + luaFilePath);
-            }
+            string luaFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Cache", "ChannelLeaderboardUpdate.lua");
+            _luaScript = File.ReadAllText(luaFilePath);
+ 
+
 
             _channelRepo = channelRepo;
         }

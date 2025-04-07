@@ -21,6 +21,11 @@ namespace knowledge_sharing_platform_cloud.Config
     {
         public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
+  
+            string currentDirectory = Directory.GetCurrentDirectory();
+            string luaFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Cache", "ChannelLeaderboardUpdate.lua");
+            bool exist = File.Exists(luaFilePath);
+            string _luaScript = File.ReadAllText(luaFilePath);
             /**
              * redis dependency injection
              */

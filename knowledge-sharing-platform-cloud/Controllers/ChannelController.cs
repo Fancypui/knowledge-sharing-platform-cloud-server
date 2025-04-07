@@ -41,6 +41,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpGet("summary")]
+        [Authorize]
         public async Task<ApiResult<GetChannelSummaryResp>> GetChannelSummary([FromQuery]GetChannelSummaryReq getChannelSummaryReq)
         {
             GetChannelSummaryResp getChannelSummaryResp = await _channelService.GetChannelSummary(getChannelSummaryReq,11000);
@@ -49,6 +50,7 @@ namespace knowledge_sharing_platform_cloud.Controllers
         }
 
         [HttpGet("ownerSummary")]
+        [Authorize]
         public async Task<ApiResult<GetChannelOwnerSummaryResp>> GetChannelOwnerSummary([FromQuery]GetChannelOwnerSummaryReq getChannelOwnerSummaryReq)
         {
             GetChannelOwnerSummaryResp getChannelOwnerSummaryResp = await _channelService.GetChannelOwnerSummary(getChannelOwnerSummaryReq);
