@@ -101,6 +101,11 @@ namespace knowledge_sharing_platform_cloud.Data.Models
                 .HasForeignKey(cm => cm.ChannelId) 
                 .IsRequired()                     
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ChannelMember>()
+               .HasIndex(c => c.CheckoutSessionId) // Create Unique Index for Checkout Session Id
+               .IsUnique()
+               .HasDatabaseName("CM_Checkout_Session_Id");
             /**
              * Post table definition
              */

@@ -1,4 +1,5 @@
 ﻿
+using knowledge_sharing_platform_cloud.Models.DTO;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Req.ChannelReq;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
@@ -12,9 +13,9 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<JoinChannelResp> JoinChannel(JoinChannelReq channel);
 
-        Task<JoinChannelSuccessResp> JoinChannelSuccess(string userId, string channelId, decimal feePaid);
+        Task<JoinChannelSuccessResp> JoinChannelSuccess(StripeWebhookEventDTO stripeWebhookEvent);
 
-        Task<JoinChannelFailResp> JoinChannelFail(string channelId);
+        Task<JoinChannelFailResp> JoinChannelFail(StripeWebhookEventDTO stripeWebhookEvent);
 
         Task<GetChannelSummaryResp> GetChannelSummary(GetChannelSummaryReq getChannelSummaryReq,long uid);
 

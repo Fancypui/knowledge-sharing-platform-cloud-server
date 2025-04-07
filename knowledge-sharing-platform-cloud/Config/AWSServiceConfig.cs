@@ -35,6 +35,7 @@ namespace knowledge_sharing_platform_cloud.Config
             var snsPushNotificationARN = configuration.GetValue<string>("AWS:SNSPushNotificationArn");
             var sqsPushNotificationQueueARN = configuration.GetValue<string>("AWS:SQSPushNotificationQueueARN");
             var sqsRedisChannelLeaderBoardARN = configuration.GetValue<string>("AWS:SQSRedisChannelLeaderBoardARN");
+            var sqsStripeWebhookQueueARN = configuration.GetValue<string>("AWS:SQSStripeWebhookQueueARN");
 
             ///**
             // * register SNS publisher, SQS publisher, and SQS handlers`
@@ -71,11 +72,20 @@ namespace knowledge_sharing_platform_cloud.Config
                     // The duration each call to SQS will wait for new messages
                     options.WaitTimeSeconds = 20;
                 });
+                /**
+                 * register sqs queue (stripe webhook event) to poll messages
+                 */
+                builder.AddSQSPoller(sqsStripeWebhookQueueARN, options =>
+                {
+                    options.MaxNumberOfConcurrentMessages = 10;
+                    options.WaitTimeSeconds = 20;
+                });
                 //    /**
                 //     * register SQS consumer
                 //     */
                 builder.AddMessageHandler<PushNotificationConsumer, PushNotificationDTO>();
                 builder.AddMessageHandler<ChannelLeaderboardConsumer, ChannelLeaderboardDTO>();
+                builder.AddMessageHandler<StripeWebhookEventConsumer, StripeWebhookEventDTO>();
             });
         }
     }

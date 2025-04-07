@@ -146,23 +146,24 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<JoinChannelSuccessResp> JoinChannelSuccess(string userId, string channelId, decimal feePaid)
+        public async Task<JoinChannelSuccessResp> JoinChannelSuccess(StripeWebhookEventDTO stripeWebhookEvent)
         {
             ChannelMember channelMember = new()
             {
-                UserId = long.Parse(userId),
-                ChannelId = long.Parse(channelId),
-                SubscriptionFeePaid = feePaid / 100,
+                UserId = long.Parse(stripeWebhookEvent.UserId),
+                ChannelId = long.Parse(stripeWebhookEvent.ChannelId),
+                SubscriptionFeePaid = stripeWebhookEvent.AmountPaid/ 100,
+                CheckoutSessionId = stripeWebhookEvent.CheckoutSessionId
             };
 
             await _channelMemberRepo.CreateChannelMemberAsync(channelMember);
 
-            await _channelRepo.IncreaseTotalMemberByOne(long.Parse(channelId));
+            await _channelRepo.IncreaseTotalMemberByOne(long.Parse(stripeWebhookEvent.ChannelId));
             
 
             JoinChannelSuccessResp response = new()
             {
-                ChannelId = long.Parse(channelId),
+                ChannelId = long.Parse(stripeWebhookEvent.ChannelId),
             };
 
             WSRespBase<JoinChannelSuccessResp> wsResponse = new()
@@ -173,7 +174,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             PushNotificationDTO pushPaymentSuccessNotification = new()
             {
-                UserIdList = [long.Parse(userId)],
+                UserIdList = [long.Parse(stripeWebhookEvent.UserId)],
                 Type = Enum.PushNotificationType.SEND_TO_INDIVIDUAL,
             };
 
@@ -183,7 +184,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             {
                 var channelLeaderboardDTO = new ChannelLeaderboardDTO
                 {
-                    channelId = long.Parse(channelId)
+                    channelId = long.Parse(stripeWebhookEvent.ChannelId)
                 };
                 
                 await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
@@ -197,13 +198,13 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             return response;
         }
 
-        public async Task<JoinChannelFailResp> JoinChannelFail(string channelId)
+        public async Task<JoinChannelFailResp> JoinChannelFail(StripeWebhookEventDTO stripeWebhookEvent)
         {
             // use websocket to emit message to FE on payment success
 
             JoinChannelFailResp response = new()
             {
-                ChannelId = long.Parse(channelId),
+                ChannelId = long.Parse(stripeWebhookEvent.ChannelId),
             };
 
             WSRespBase<JoinChannelFailResp> wsResponse = new()

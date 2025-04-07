@@ -24,7 +24,13 @@ namespace knowledge_sharing_platform_cloud.Data.Models
         [Column("channel_id", TypeName = "BIGINT")]
         public long ChannelId { get; set; }
 
+        [Required]
+        [Column("checkout_session_id", TypeName = "VARCHAR(200)")]
+        public string CheckoutSessionId { get; set; }
+
+
         [Column("subscription_fee_paid", TypeName = "DECIMAL(10,2)")]
         public decimal? SubscriptionFeePaid { get; set; }
+
     }
 }
