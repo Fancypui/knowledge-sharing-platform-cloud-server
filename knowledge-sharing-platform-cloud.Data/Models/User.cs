@@ -43,5 +43,9 @@ namespace knowledge_sharing_platform_cloud.Data.Models
         [Column("salt", TypeName = "NVARCHAR(255)")]
         [MaxLength(255)]
         public string Salt { get; set; }
+
+        [Column("web_push_subscription", TypeName = "NVARCHAR(700)")]
+        [MaxLength(700)]
+        public string? WebPushSubscription { get; set; }
     }
 }

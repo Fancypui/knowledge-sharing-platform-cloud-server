@@ -232,5 +232,16 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 Description = user.Description
             };
         }
+
+        public async Task SaveUserWebPushSubcription(SaveUserWebPushSubscription request, long uid)
+        {
+            if(request == null || request.WebPushSubscription == null)
+            {
+                throw new BusinessException("Web Push Subscription cannot be null");
+            }
+            await _userRepo.updateWebPushSub(request.WebPushSubscription,uid);
+        }
+
+
     }
 }

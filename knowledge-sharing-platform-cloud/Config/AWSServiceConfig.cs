@@ -37,6 +37,7 @@ namespace knowledge_sharing_platform_cloud.Config
             var sqsRedisChannelLeaderBoardARN = configuration.GetValue<string>("AWS:SQSRedisChannelLeaderBoardARN");
             var sqsStripeWebhookQueueARN = configuration.GetValue<string>("AWS:SQSStripeWebhookQueueARN");
 
+            var snsWebPushARN = configuration.GetValue<string>("AWS:SNSWebPush");
             ///**
             // * register SNS publisher, SQS publisher, and SQS handlers`
             // */
@@ -46,6 +47,10 @@ namespace knowledge_sharing_platform_cloud.Config
                  * register sns publisher (push notification topic)
                  */
                 builder.AddSNSPublisher<PushNotificationDTO>(snsPushNotificationARN);
+                /**
+                 * register SNS publisher (Web Push Topic)
+                 */
+                builder.AddSNSPublisher<WebPushPaymentMsgDTO>(snsWebPushARN);
                 /**
                  * register sqs publisher (queue to update channel leaderboard in redis)
                  */
