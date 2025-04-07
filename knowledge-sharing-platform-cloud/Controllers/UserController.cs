@@ -5,6 +5,7 @@ using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp;
 using knowledge_sharing_platform_cloud.Models.ValueObjects.Resp.UserResp;
 using knowledge_sharing_platform_cloud.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace knowledge_sharing_platform_cloud.Controllers
@@ -37,6 +38,14 @@ namespace knowledge_sharing_platform_cloud.Controllers
             IEnumerable<UserJoinedChannelListResp> userJoinedChannelListResp = await _userService.UserJoinedChannelList(long.Parse(HttpContext.Items["UserId"]?.ToString()));
 
             return ApiResult<IEnumerable<UserJoinedChannelListResp>>.ServiceSucess(userJoinedChannelListResp);
+        }
+        [HttpPut("webPushSubscription")]
+        [Authorize]
+        public async Task<ApiResult<SaveWebPushResp>> updateWebPushSub([FromBody] SaveUserWebPushSubscription request)
+        {
+            await _userService.SaveUserWebPushSubcription(request,long.Parse(HttpContext.Items["UserId"]?.ToString()));
+
+            return ApiResult<SaveWebPushResp>.ServiceSucess(new SaveWebPushResp { Saved=true});
         }
 
         [HttpGet("managedChannels")]

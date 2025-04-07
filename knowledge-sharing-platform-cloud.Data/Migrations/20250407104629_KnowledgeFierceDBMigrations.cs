@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace knowledge_sharing_platform_cloud.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class KnowledgeSharingPlatformDBMigration : Migration
+    public partial class KnowledgeFierceDBMigrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,7 +24,8 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                     stripe_account_id = table.Column<string>(type: "NVARCHAR(255)", maxLength: 255, nullable: true),
                     description = table.Column<string>(type: "TEXT", nullable: true),
                     created_time = table.Column<DateTime>(type: "DATETIME2", nullable: false, defaultValueSql: "GETDATE()"),
-                    salt = table.Column<string>(type: "NVARCHAR(255)", maxLength: 255, nullable: false)
+                    salt = table.Column<string>(type: "NVARCHAR(255)", maxLength: 255, nullable: false),
+                    web_push_subscription = table.Column<string>(type: "NVARCHAR(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
                 {

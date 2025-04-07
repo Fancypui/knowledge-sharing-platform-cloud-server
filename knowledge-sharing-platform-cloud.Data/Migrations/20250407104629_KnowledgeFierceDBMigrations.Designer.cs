@@ -12,8 +12,8 @@ using knowledge_sharing_platform_cloud.Data.Models;
 namespace knowledge_sharing_platform_cloud.Data.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20250403161502_KnowledgeSharingPlatformDBMigration")]
-    partial class KnowledgeSharingPlatformDBMigration
+    [Migration("20250407104629_KnowledgeFierceDBMigrations")]
+    partial class KnowledgeFierceDBMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -341,6 +341,11 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("NVARCHAR(20)")
                         .HasColumnName("username");
+
+                    b.Property<string>("WebPushSubscription")
+                        .HasMaxLength(255)
+                        .HasColumnType("NVARCHAR(255)")
+                        .HasColumnName("web_push_subscription");
 
                     b.HasKey("Id");
 

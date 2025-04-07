@@ -96,6 +96,7 @@ namespace knowledge_sharing_platform_cloud.Config
             services.AddScoped<ILikesService, LikesServiceImpl>();
             services.AddScoped<IStripeService, StripeServiceImpl>();
             services.AddSingleton<WebsocketHandler, WebsocketHandler>();
+            services.AddScoped<IWebPushService,WebPushServiceImpl>();
 
             /**
              * inject Appseting into DI container

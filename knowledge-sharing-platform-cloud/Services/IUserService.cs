@@ -17,5 +17,7 @@ namespace knowledge_sharing_platform_cloud.Services
 
         Task<UserInfoResp> GetUserInfo(long uid);
 
+        Task SaveUserWebPushSubcription(SaveUserWebPushSubscription request, long uid);
+
     }
 }

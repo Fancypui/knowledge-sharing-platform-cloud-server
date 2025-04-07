@@ -339,6 +339,11 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                         .HasColumnType("NVARCHAR(20)")
                         .HasColumnName("username");
 
+                    b.Property<string>("WebPushSubscription")
+                        .HasMaxLength(255)
+                        .HasColumnType("NVARCHAR(255)")
+                        .HasColumnName("web_push_subscription");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")

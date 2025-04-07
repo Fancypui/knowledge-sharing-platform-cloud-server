@@ -1,4 +1,5 @@
 ﻿using System.Formats.Asn1;
+using Azure.Core;
 using knowledge_sharing_platform_cloud.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,6 +58,26 @@ namespace knowledge_sharing_platform_cloud.Data.Repositories
                 .FirstOrDefaultAsync(u => u.Email == email);
  
             return user;
+        }
+        public async Task updateWebPushSub(string webPushSub, long uid)
+        {
+            // Find the user with the specified uid
+            var user = await _applicationContext.User
+                .Where(u => u.Id == uid)
+                .FirstOrDefaultAsync();
+            if (user != null)
+            {
+                // Update the WebPushSubscription field
+                user.WebPushSubscription = webPushSub;
+
+                // Save changes to the database
+                await _applicationContext.SaveChangesAsync();
+            }
+            else
+            {
+                // Handle the case where the user doesn't exist
+                throw new Exception("User not found.");
+            }
         }
     }
 }
