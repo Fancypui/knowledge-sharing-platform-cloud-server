@@ -2,7 +2,7 @@
 {
     public interface IWebPushService
     {
-        void PushChannelPaymentMsgToClientWeb(long userId, long channelId, string pushMsg,
+        Task PushChannelPaymentMsgToClientWeb(long userId, long channelId, string pushMsg,
             string redirectUrlWithoutFrontendDomainName);
     }
 }

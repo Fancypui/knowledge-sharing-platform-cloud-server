@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace knowledge_sharing_platform_cloud.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class KnowledgeFierceDBMigrations : Migration
+    public partial class knowledgefiereceDBMigrate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,7 +25,7 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                     description = table.Column<string>(type: "TEXT", nullable: true),
                     created_time = table.Column<DateTime>(type: "DATETIME2", nullable: false, defaultValueSql: "GETDATE()"),
                     salt = table.Column<string>(type: "NVARCHAR(255)", maxLength: 255, nullable: false),
-                    web_push_subscription = table.Column<string>(type: "NVARCHAR(255)", maxLength: 255, nullable: true)
+                    web_push_subscription = table.Column<string>(type: "NVARCHAR(700)", maxLength: 700, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -91,6 +91,7 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     user_id = table.Column<long>(type: "BIGINT", nullable: false),
                     channel_id = table.Column<long>(type: "BIGINT", nullable: false),
+                    checkout_session_id = table.Column<string>(type: "VARCHAR(200)", nullable: false),
                     subscription_fee_paid = table.Column<decimal>(type: "DECIMAL(10,2)", nullable: true)
                 },
                 constraints: table =>
@@ -198,6 +199,12 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                 name: "IX_Channel_user_id",
                 table: "Channel",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "CM_Checkout_Session_Id",
+                table: "Channel_Member",
+                column: "checkout_session_id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Channel_Member_channel_id",

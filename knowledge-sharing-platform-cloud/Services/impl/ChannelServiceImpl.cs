@@ -194,7 +194,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
                 
                 //await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
                 await _messagePublisher.PublishAsync(channelLeaderboardDTO);
-                _webPushService.PushChannelPaymentMsgToClientWeb(userId, channelId, "Payment Success", $"/channel/{channelId}");
+                await _webPushService.PushChannelPaymentMsgToClientWeb(userId, channelId, "Payment Success", $"/channel/{channelId}");
 
             }
             catch (System.Exception ex)
@@ -229,7 +229,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             };
 
             await _messagePublisher.PublishAsync(pushPaymentFailNotification);
-            _webPushService.PushChannelPaymentMsgToClientWeb(userId, channelId, "Payment Failed", "/home");
+            await _webPushService.PushChannelPaymentMsgToClientWeb(userId, channelId, "Payment Failed", "/home");
 
             return response;
         }

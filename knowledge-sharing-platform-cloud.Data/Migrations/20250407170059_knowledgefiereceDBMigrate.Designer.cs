@@ -12,8 +12,8 @@ using knowledge_sharing_platform_cloud.Data.Models;
 namespace knowledge_sharing_platform_cloud.Data.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20250407104629_KnowledgeFierceDBMigrations")]
-    partial class KnowledgeFierceDBMigrations
+    [Migration("20250407170059_knowledgefiereceDBMigrate")]
+    partial class knowledgefiereceDBMigrate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -139,6 +139,11 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                         .HasColumnType("BIGINT")
                         .HasColumnName("channel_id");
 
+                    b.Property<string>("CheckoutSessionId")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR(200)")
+                        .HasColumnName("checkout_session_id");
+
                     b.Property<decimal?>("SubscriptionFeePaid")
                         .HasColumnType("DECIMAL(10,2)")
                         .HasColumnName("subscription_fee_paid");
@@ -150,6 +155,10 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChannelId");
+
+                    b.HasIndex("CheckoutSessionId")
+                        .IsUnique()
+                        .HasDatabaseName("CM_Checkout_Session_Id");
 
                     b.HasIndex("UserId");
 
@@ -343,8 +352,8 @@ namespace knowledge_sharing_platform_cloud.Data.Migrations
                         .HasColumnName("username");
 
                     b.Property<string>("WebPushSubscription")
-                        .HasMaxLength(255)
-                        .HasColumnType("NVARCHAR(255)")
+                        .HasMaxLength(700)
+                        .HasColumnType("NVARCHAR(700)")
                         .HasColumnName("web_push_subscription");
 
                     b.HasKey("Id");

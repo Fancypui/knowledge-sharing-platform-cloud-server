@@ -23,7 +23,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             _messagePublisher = messagePublisher;
             _frontendDomainName = config["FrontEndDomainName"];
         }
-        public async void PushChannelPaymentMsgToClientWeb(long userId, long channelId, string pushMsg, 
+        public async Task PushChannelPaymentMsgToClientWeb(long userId, long channelId, string pushMsg, 
             string redirectUrlWithoutFrontendDomainName)
         {
             var user = await _userRepo.GetUserByIdAsync(userId);

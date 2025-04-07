@@ -14,9 +14,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["knowledge-sharing-platform-cloud/knowledge-sharing-platform-cloud.Api.csproj", "knowledge-sharing-platform-cloud/"]
 COPY ["knowledge-sharing-platform-cloud.Data/knowledge-sharing-platform-cloud.Data.csproj", "knowledge-sharing-platform-cloud.Data/"]
-
 COPY ["knowledge-sharing-platform-cloud/Cache/ChannelLeaderboardUpdate.lua", "knowledge-sharing-platform-cloud.Api/Cache/"]
-
 RUN dotnet restore "./knowledge-sharing-platform-cloud/knowledge-sharing-platform-cloud.Api.csproj"
 COPY . .
 WORKDIR "/src/knowledge-sharing-platform-cloud"
