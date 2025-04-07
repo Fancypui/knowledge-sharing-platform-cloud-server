@@ -25,7 +25,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
         private readonly UserCache _userCache;
         private readonly ChannelLeaderboardCache _leaderboardCache;
         private readonly IMessagePublisher _messagePublisher;
-
+        private readonly IWebPushService _webPushService;
         private readonly IConfiguration _configuration;
         public ChannelServiceImpl(
             ChannelRepo channelRepo,
@@ -37,6 +37,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             S3Service s3Service,
             IStripeService stripeService,
             IMessagePublisher messagePublisher,
+            IWebPushService webPushService,
             IConfiguration configuration)
         {
             _channelRepo = channelRepo;
@@ -48,6 +49,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             _userCache = userCache;
             _leaderboardCache = leaderboardCache;
             _configuration = configuration;
+            _webPushService = webPushService;
             _messagePublisher = messagePublisher;
         }
 
@@ -148,10 +150,13 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<JoinChannelSuccessResp> JoinChannelSuccess(StripeWebhookEventDTO stripeWebhookEvent)
         {
+            var userId = long.Parse(stripeWebhookEvent.UserId);
+            var channelId = long.Parse(stripeWebhookEvent.ChannelId);
+
             ChannelMember channelMember = new()
             {
-                UserId = long.Parse(stripeWebhookEvent.UserId),
-                ChannelId = long.Parse(stripeWebhookEvent.ChannelId),
+                UserId = userId,
+                ChannelId = channelId,
                 SubscriptionFeePaid = stripeWebhookEvent.AmountPaid/ 100,
                 CheckoutSessionId = stripeWebhookEvent.CheckoutSessionId
             };
@@ -174,7 +179,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
             PushNotificationDTO pushPaymentSuccessNotification = new()
             {
-                UserIdList = [long.Parse(stripeWebhookEvent.UserId)],
+                UserIdList = [userId],
                 Type = Enum.PushNotificationType.SEND_TO_INDIVIDUAL,
             };
 
@@ -184,11 +189,13 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             {
                 var channelLeaderboardDTO = new ChannelLeaderboardDTO
                 {
-                    channelId = long.Parse(stripeWebhookEvent.ChannelId)
+                    channelId = channelId
                 };
                 
-                await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
+                //await _messagePublisher.PublishAsync(pushPaymentSuccessNotification);
                 await _messagePublisher.PublishAsync(channelLeaderboardDTO);
+                _webPushService.PushChannelPaymentMsgToClientWeb(userId, channelId, "Payment Success", $"/channel/{channelId}");
+
             }
             catch (System.Exception ex)
             {
@@ -200,11 +207,12 @@ namespace knowledge_sharing_platform_cloud.Services.impl
 
         public async Task<JoinChannelFailResp> JoinChannelFail(StripeWebhookEventDTO stripeWebhookEvent)
         {
-            // use websocket to emit message to FE on payment success
+            var userId = long.Parse(stripeWebhookEvent.UserId);
+            var channelId = long.Parse(stripeWebhookEvent.ChannelId);
 
             JoinChannelFailResp response = new()
             {
-                ChannelId = long.Parse(stripeWebhookEvent.ChannelId),
+                ChannelId = channelId,
             };
 
             WSRespBase<JoinChannelFailResp> wsResponse = new()
@@ -221,6 +229,7 @@ namespace knowledge_sharing_platform_cloud.Services.impl
             };
 
             await _messagePublisher.PublishAsync(pushPaymentFailNotification);
+            _webPushService.PushChannelPaymentMsgToClientWeb(userId, channelId, "Payment Failed", "/home");
 
             return response;
         }
