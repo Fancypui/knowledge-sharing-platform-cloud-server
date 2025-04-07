@@ -35,7 +35,7 @@ namespace knowledge_sharing_platform_cloud.Config
             var snsPushNotificationARN = configuration.GetValue<string>("AWS:SNSPushNotificationArn");
             var sqsPushNotificationQueueARN = configuration.GetValue<string>("AWS:SQSPushNotificationQueueARN");
             var sqsRedisChannelLeaderBoardARN = configuration.GetValue<string>("AWS:SQSRedisChannelLeaderBoardARN");
-            var sqsStripeWebhookQueueARN = configuration.GetValue<string>("AWS:SQSStripeWebhookQueueARN");
+            //var sqsStripeWebhookQueueARN = configuration.GetValue<string>("AWS:SQSStripeWebhookQueueARN");
 
             var snsWebPushARN = configuration.GetValue<string>("AWS:SNSWebPush");
             ///**
@@ -43,6 +43,7 @@ namespace knowledge_sharing_platform_cloud.Config
             // */
             services.AddAWSMessageBus(builder =>
             {
+
                 /**
                  * register sns publisher (push notification topic)
                  */
@@ -80,17 +81,17 @@ namespace knowledge_sharing_platform_cloud.Config
                 /**
                  * register sqs queue (stripe webhook event) to poll messages
                  */
-                builder.AddSQSPoller(sqsStripeWebhookQueueARN, options =>
-                {
-                    options.MaxNumberOfConcurrentMessages = 10;
-                    options.WaitTimeSeconds = 20;
-                });
+                //builder.AddSQSPoller(sqsStripeWebhookQueueARN, options =>
+                //{
+                //    options.MaxNumberOfConcurrentMessages = 10;
+                //    options.WaitTimeSeconds = 20;
+                //});
                 //    /**
                 //     * register SQS consumer
                 //     */
                 builder.AddMessageHandler<PushNotificationConsumer, PushNotificationDTO>();
                 builder.AddMessageHandler<ChannelLeaderboardConsumer, ChannelLeaderboardDTO>();
-                builder.AddMessageHandler<StripeWebhookEventConsumer, StripeWebhookEventDTO>();
+                //builder.AddMessageHandler<StripeWebhookEventConsumer, StripeWebhookEventDTO>();
             });
         }
     }

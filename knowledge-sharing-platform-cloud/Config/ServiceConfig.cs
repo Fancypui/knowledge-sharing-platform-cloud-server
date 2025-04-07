@@ -14,6 +14,7 @@ using knowledge_sharing_platform_cloud.Data.Constant;
 using Microsoft.Data.SqlClient;
 using System.Data.Common;
 using knowledge_sharing_platform_cloud.Data.Models;
+using knowledge_sharing_platform_cloud.Services.Consumer;
 
 namespace knowledge_sharing_platform_cloud.Config
 {
@@ -97,6 +98,7 @@ namespace knowledge_sharing_platform_cloud.Config
             services.AddScoped<IStripeService, StripeServiceImpl>();
             services.AddSingleton<WebsocketHandler, WebsocketHandler>();
             services.AddScoped<IWebPushService,WebPushServiceImpl>();
+            services.AddHostedService<StripePaymentWebhookConsumer>();
 
             /**
              * inject Appseting into DI container
