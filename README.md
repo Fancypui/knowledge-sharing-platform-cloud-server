@@ -1,3 +1,5 @@
+# KnowledgeFierce | A Knowledge-Sharing Platform
+
 **Project Description**
 
 A full-stack, cloud-native web application that empowers users to create and participate in specialized knowledge channels. Designed for scalability, real-time performance, and rich user interaction, this platform enables structured information exchange among communities with similar interests.
